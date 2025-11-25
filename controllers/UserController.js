@@ -69,9 +69,7 @@ const loginUser = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res
-      .status(200)
-   cookie("userToken", token, {
+    res.status(200).cookie("userToken", token, {
   path:'/',
         httpOnly:true,
         expires: new Date(Date.now()+ 1000 *60 *60 * 24 * 70),
