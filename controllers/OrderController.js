@@ -111,7 +111,7 @@ const verifyorder= async(req,res)=>{
 
 const getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    const orders = await Order.find({ userId: req.user._id }).sort({ createdAt: -1 }).populate("items");
     res.status(200).json({ orders });
   } catch (err) {
     res.status(500).json({ message: "Error fetching orders" });
