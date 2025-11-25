@@ -72,11 +72,11 @@ const loginUser = async (req, res) => {
     res
       .status(200)
    cookie("userToken", token, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-  maxAge: 5 * 24 * 60 * 60 * 1000,
-  path: "/"
+  path:'/',
+        httpOnly:true,
+        expires: new Date(Date.now()+ 1000 *60 *60 * 24 * 70),
+        sameSite:'none',
+      secure:true,
 })
       .json({
         message: "Login Successful",
@@ -111,11 +111,11 @@ const loginAdmin = async (req, res) => {
     );
 
     res.status(200).cookie("adminToken", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", 
-        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", 
-        maxAge:5* 24 * 60 * 60 * 1000,
-        path: "/"
+       path:'/',
+        httpOnly:true,
+        expires: new Date(Date.now()+ 1000 *60 *60 * 24 * 70),
+        sameSite:'none',
+      secure:true,
      
       }).json({
         message: "Login Successful",
