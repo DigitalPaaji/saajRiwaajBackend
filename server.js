@@ -63,17 +63,6 @@ app.use('/offer', offerRoutes);
 app.use("/cart",cartRoutes)
 
 
-
-
-
-
-
-
-
-
-
-
-
 const server= createServer(app);
 
 const io = new Server(server,{
@@ -81,12 +70,6 @@ const io = new Server(server,{
   cors:[process.env.FRONTEND_URL],
   credentials:true,
 })
-
-
-
-
-
-
 
 io.on("connection", (socket) => {
 
@@ -98,12 +81,6 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
   });
 });
-
-
-
-
-
-
 
 
 
