@@ -66,9 +66,15 @@ app.use("/cart",cartRoutes)
 const server= createServer(app);
 
 const io = new Server(server,{
-  pingTimeout: 60000,
-  cors:"*",
-  credentials:true,
+ cors: {
+    origin: [
+      process.env.FRONTEND_URL,     // example: https://saaj-riwaaj.vercel.app
+      "http://localhost:3000"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  transports: ["websocket", "polling"]
 })
 
 io.on("connection", (socket) => {
