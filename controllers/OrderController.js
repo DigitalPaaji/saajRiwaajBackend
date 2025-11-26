@@ -79,8 +79,7 @@ return  res.json(order);
 const verifyorder= async(req,res)=>{
   try {
      const { razorpay_order_id, razorpay_payment_id, razorpay_signature,productId } = req.body;
-     
-  const sign = razorpay_order_id + "|" + razorpay_payment_id;
+       const sign = razorpay_order_id + "|" + razorpay_payment_id;
   
   const expectedSign = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -93,7 +92,7 @@ const verifyorder= async(req,res)=>{
     order.paymentStatus= "paid";
      await order.save();
 
-    return res.json({ success: true });
+    return res.json({ success: true,name:order.shippingAddress.name});
   } else {
     return res.json({ success: false });
   }
