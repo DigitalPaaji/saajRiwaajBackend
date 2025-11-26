@@ -67,17 +67,17 @@ const server= createServer(app);
 
 const io = new Server(server,{
   pingTimeout: 60000,
-  cors:[process.env.FRONTEND_URL],
+  cors:"*",
   credentials:true,
 })
 
 io.on("connection", (socket) => {
 
- 
+ console.log(socket.id)
   socket.on("buy", (msg) => {
     socket.broadcast.emit("buy", msg);
   });
-
+ 
   socket.on("disconnect", () => {
   });
 });
