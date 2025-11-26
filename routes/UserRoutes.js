@@ -19,6 +19,7 @@ router.put('/reset-password/:token', User.resetPassword);
 router.post('/signup',User.signup)
 // router.post('/login',User.login)
 router.post('/loginUser',User.loginUser)
+router.post('/loginUser/google',User.loginByGoogle)
 router.post('/loginAdmin',User.loginAdmin)
 router.post('/userlogout',User.logoutUser)
 router.post('/adminlogout',User.logoutAdmin)
