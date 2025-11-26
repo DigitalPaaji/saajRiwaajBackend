@@ -129,10 +129,11 @@ const loginAdmin = async (req, res) => {
 // ---------------------- LOGOUT ----------------------
 const logoutUser = (req, res) => {
   res.clearCookie("userToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", 
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-    path: "/",
+      path:'/',
+        httpOnly:true,
+        expires: new Date(),
+        sameSite:'none',
+      secure:true,
     
   });
   return res.status(200).json({ message: "Logged out" });

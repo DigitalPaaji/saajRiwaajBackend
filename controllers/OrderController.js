@@ -2,7 +2,8 @@ const Order = require("../models/OrderModel");
 const User = require("../models/UserModel");
 const Product = require('../models/ProductModel')
 const Razorpay  = require("razorpay")
-const crypto = require("crypto")
+const crypto = require("crypto");
+const Cart = require("../models/CartModel");
 // USER: Place an order
 const placeOrder = async (req, res) => { 
   try {
@@ -41,7 +42,7 @@ key_id: process.env.RAZORPAY_KEY_ID,
 
 
 
-     return  res.json({order,productOrder});
+     return  res.json({order,productOrder,userId});
     }
     else{
 
@@ -78,7 +79,7 @@ return  res.json(order);
 
 const verifyorder= async(req,res)=>{
   try {
-     const { razorpay_order_id, razorpay_payment_id, razorpay_signature,productId } = req.body;
+     const { razorpay_order_id, razorpay_payment_id, razorpay_signature,productId,userId } = req.body;
        const sign = razorpay_order_id + "|" + razorpay_payment_id;
   
   const expectedSign = crypto
@@ -91,6 +92,7 @@ const verifyorder= async(req,res)=>{
     const order = await Order.findById(productId)
     order.paymentStatus= "paid";
      await order.save();
+    await Cart.deleteMany({ user: userId });
 
     return res.json({ success: true,name:order.shippingAddress.name});
   } else {
