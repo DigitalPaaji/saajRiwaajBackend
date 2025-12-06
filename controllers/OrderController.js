@@ -1,12 +1,11 @@
 const Order = require("../models/OrderModel");
 const User = require("../models/UserModel");
 const Product = require('../models/ProductModel')
-const Razorpay  = require("razorpay")
-const crypto = require("crypto");
+
 const Cart = require("../models/CartModel");
 const axios = require("axios");
-const generateXVerify = require("../middleware/generateXVerify");
-const { v4:uuid   }   = require("uuid")
+
+
 const qs= require("querystring")
 
 
@@ -65,6 +64,8 @@ const phonepePay = async (req, res) => {
   try {
     const { orderId, amount, userId } = req.body;
     const AUTH_TOKEN = await getPhonePeToken()
+
+console.log(orderId, amount,AUTH_TOKEN,"asdasdsasasadddd")
 
 const payData ={
  merchantOrderId: orderId,   
