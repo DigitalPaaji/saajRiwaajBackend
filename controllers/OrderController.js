@@ -21,7 +21,7 @@ const getPhonePeToken = async () => {
   });
 
   const response = await axios.post(
-    `${process.env.Sandbox}/v1/oauth/token`,
+    `${process.env.Sandboxauth}/v1/oauth/token`,
     data,
     {
       headers: {
