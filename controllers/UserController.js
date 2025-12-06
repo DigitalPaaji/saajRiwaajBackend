@@ -68,7 +68,7 @@ const loginUser = async (req, res) => {
       { id: user._id, roles: user.role },
       USER_JWT_SECRET,
       { expiresIn: "1d" }
-    );
+    ); 
 
     res.status(200).cookie("userToken", token, {
   path:'/',

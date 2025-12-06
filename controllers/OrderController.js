@@ -4,108 +4,191 @@ const Product = require('../models/ProductModel')
 const Razorpay  = require("razorpay")
 const crypto = require("crypto");
 const Cart = require("../models/CartModel");
-// USER: Place an order
-const placeOrder = async (req, res) => { 
+const axios = require("axios");
+const generateXVerify = require("../middleware/generateXVerify");
+const { v4:uuid   }   = require("uuid")
+const qs= require("querystring")
+
+
+
+const getPhonePeToken = async () => {
+  const data = qs.stringify({
+    client_id: process.env.PHONEPE_CLIENT_ID,
+    client_version: process.env.PHONEPE_CLIENT_VERSION,
+    client_secret: process.env.PHONEPE_CLIENT_SECRET,
+    grant_type: process.env.PHONEPE_GRANT_TYPE
+,
+  });
+
+  const response = await axios.post(
+    `${process.env.Sandbox}/v1/oauth/token`,
+    data,
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+
+  return response.data.access_token;
+};
+  
+
+ const placeOrder = async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod, amount,type } = req.body;
+    const { items, shippingAddress, paymentMethod, amount, type } = req.body;
     const userId = req.user._id;
 
-    if(type !="paynow"){
-  const instance = new Razorpay({
-key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-
-  })
- 
-
-      const options = {
-      amount: amount * 100,
-      currency: "INR",
-      receipt: "receipt_" + Date.now(),
-    };
-
- 
-    const order = await instance.orders.create(options);
-
-  const productOrder= await Order.create({
+    const productOrder = await Order.create({
       userId,
       items,
       shippingAddress,
       paymentMethod,
       amount,
-      paymentStatus:  "pending",
-      orderStatus: "placed"
+      paymentStatus: "pending",
+      orderStatus: "placed",
     });
 
     await User.findByIdAndUpdate(userId, { $set: { cart: [] } });
 
+    return res.json({ productOrder, userId });
 
-
-
-     return  res.json({order,productOrder,userId});
-    }
-    else{
-
- const instance = new Razorpay({
-key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-
-  })
-
-
-    const options = {
-      amount: amount * 100,
-      currency: "INR",
-      receipt: "receipt_" + Date.now(),
-    };
-
-    const order = await instance.orders.create(options);
-  
-return  res.json(order);
-
-
-
-
-
-    }
-  
   } catch (err) {
     console.error("Place order error:", err);
-    res.status(500).json({ message: "Server Error" });
+    return res.status(500).json({ message: "Server Error", error: err.message });
   }
 };
- 
 
 
-const verifyorder= async(req,res)=>{
+
+const phonepePay = async (req, res) => {
   try {
-     const { razorpay_order_id, razorpay_payment_id, razorpay_signature,productId,userId } = req.body;
-       const sign = razorpay_order_id + "|" + razorpay_payment_id;
-  
-  const expectedSign = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-    .update(sign)
-    .digest("hex");
+    const { orderId, amount, userId } = req.body;
+    const AUTH_TOKEN = await getPhonePeToken()
+
+const payData ={
+ merchantOrderId: orderId,   
+      amount: amount * 100,                 
+    
+
+      paymentFlow: {
+        type: "PG_CHECKOUT", // always required
+        merchantUrls: {
+          redirectUrl: `${process.env.FRONTEND_URL}/orders`,
+        },
+      }
+}
+const response = await axios.post(`${process.env.Sandbox}/checkout/v2/pay`,payData,{
+  headers :{
+       "Content-Type": "application/json",
+      "Authorization": `O-Bearer ${AUTH_TOKEN}`,
+  }
+})
+
+
+  const tokenUrl = response.data.redirectUrl;
+
+    return res.json({
+      success: true,
+      tokenUrl,
+      orderId,
+    });
+
+    // return payfetch.data;
+
+
+
+
 
     
-      if (razorpay_signature === expectedSign) {
-    const order = await Order.findById(productId)
-    order.paymentStatus= "paid";
-     await order.save();
-    await Cart.deleteMany({ user: userId });
-
-    return res.json({ success: true,name:order.shippingAddress.name});
-  } else {
-    return res.json({ success: false });
-  }
-
   } catch (error) {
-        return res.json({ success: false,error:error.message });
-
+    console.log( error.message);
+    return res.status(500).json({ error: error.message });
   }
+  
+};
+
+
+ 
+
+const phonepeStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+  const userId = req.user._id;
+  
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+
+        const AUTH_TOKEN = await getPhonePeToken();
+   const statusResponse = await axios.get(
+      `${process.env.Sandbox}/checkout/v2/order/${orderId}/status?details=true`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `O-Bearer ${AUTH_TOKEN}`,
+        },
+      }
+    );
+        const phonePeData = statusResponse.data;
+
+ 
+if(phonePeData.state=="COMPLETED"){
+   order.paymentStatus = "paid";
+     await order.save();
+      await Cart.deleteMany({ user: userId });
+          return res.json({ success: true, message: "Order created" });
+
+}
+else if(phonePeData.state=="FAILED"){
+  await order.deleteOne()
+      return res.json({ success: false, message:"Order falied" });
+
 }
 
 
+   
+
+   
+  
+
+ 
+
+  } catch (err) {
+    console.log("Error verifying payment:", err);
+    res.status(500).json({ success: false, message: "Error verifying payment", error: err.message });
+  }
+};
+
+const phonePaycancel= async(req,res)=>{
+ try {
+    const { orderId } = req.params;
+
+    // 1️⃣ Fetch the order from DB
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+  
+
+    // 3️⃣ Save updated order
+    await order.deleteOne();
+
+    // 4️⃣ Respond success
+    return res.json({ success: true, message: "Payment cancel" });
+  } catch (err) {
+    console.log("Error verifying payment:", err);
+    res.status(500).json({ success: false, message: "Error verifying payment", error: err.message });
+  }
+}
+
+ 
 
 
 
@@ -178,7 +261,7 @@ const updateOrderStatus = async (req, res) => {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    order.orderStatus = req.body.orderStatus; // e.g. shipped/delivered
+    order.orderStatus = req.body.orderStatus; 
     await order.save();
     res.status(200).json({ message: "Status updated", order });
   } catch (err) {
@@ -253,6 +336,8 @@ module.exports = {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
-  verifyorder,
-  updateTracking
+  updateTracking,
+  phonepePay,
+  phonepeStatus,
+  phonePaycancel,
 };

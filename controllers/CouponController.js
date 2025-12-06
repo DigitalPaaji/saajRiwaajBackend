@@ -4,7 +4,7 @@ const Coupon = require("../models/CouponModel");
 const createCoupon = async (req, res) => {
   const { code, discountPercent } = req.body;
   try {
-    const coupon = await Coupon.create({
+    const coupon = await Coupon.create({ 
       code: code.toUpperCase(),
       discountPercent,
     });
