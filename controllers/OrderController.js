@@ -1,7 +1,8 @@
 const Order = require("../models/OrderModel");
 const User = require("../models/UserModel");
 const Product = require('../models/ProductModel')
-
+const Razorpay  = require("razorpay")
+const crypto = require("crypto");
 const Cart = require("../models/CartModel");
 const axios = require("axios");
 
@@ -11,28 +12,33 @@ const qs= require("querystring")
 
 
 const getPhonePeToken = async () => {
-  const data = qs.stringify({
+  try {
+     const data = qs.stringify({
     client_id: process.env.PHONEPE_CLIENT_ID,
     client_version: process.env.PHONEPE_CLIENT_VERSION,
     client_secret: process.env.PHONEPE_CLIENT_SECRET,
     grant_type: process.env.PHONEPE_GRANT_TYPE
-,
-  });
-
+, 
+  });   
  
-  const response = await axios.post(
+  const response = await axios.post( 
     `${process.env.Sandboxauth}/v1/oauth/token`,
     data,
     {
-      headers: {
+      headers: { 
         "Content-Type": "application/x-www-form-urlencoded",
       },
     }
   );
- console.log(response)
+ 
+
   return response.data.access_token;
+  } catch (error) {
+    console.log(error)
+  }
+ 
 };
-  
+   
 
  const placeOrder = async (req, res) => {
   try {
@@ -66,8 +72,6 @@ const phonepePay = async (req, res) => {
     const { orderId, amount, userId } = req.body;
     const AUTH_TOKEN = await getPhonePeToken()
 
-console.log(orderId, amount,AUTH_TOKEN,"asdasdsasasadddd")
-
 const payData ={
  merchantOrderId: orderId,   
       amount: amount * 100,                 
@@ -80,23 +84,23 @@ const payData ={
         },
       }
 }
-// const response = await axios.post(`${process.env.Sandbox}/checkout/v2/pay`,payData,{
-//   headers :{
-//        "Content-Type": "application/json",
-//       "Authorization": `O-Bearer ${AUTH_TOKEN}`,
-//   }
-// })
+const response = await axios.post(`${process.env.Sandbox}/checkout/v2/pay`,payData,{
+  headers :{
+       "Content-Type": "application/json",
+      "Authorization": `O-Bearer ${AUTH_TOKEN}`,
+  }
+})
 
 
-  // const tokenUrl = response.data.redirectUrl;
+  const tokenUrl = response.data.redirectUrl;
 
     return res.json({
       success: true,
-      // tokenUrl,
+      tokenUrl,
       orderId,
     });
 
-
+    // return payfetch.data;
 
 
 
