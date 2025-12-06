@@ -79,23 +79,23 @@ const payData ={
         },
       }
 }
-const response = await axios.post(`${process.env.Sandbox}/checkout/v2/pay`,payData,{
-  headers :{
-       "Content-Type": "application/json",
-      "Authorization": `O-Bearer ${AUTH_TOKEN}`,
-  }
-})
+// const response = await axios.post(`${process.env.Sandbox}/checkout/v2/pay`,payData,{
+//   headers :{
+//        "Content-Type": "application/json",
+//       "Authorization": `O-Bearer ${AUTH_TOKEN}`,
+//   }
+// })
 
 
-  const tokenUrl = response.data.redirectUrl;
+  // const tokenUrl = response.data.redirectUrl;
 
     return res.json({
       success: true,
-      tokenUrl,
+      // tokenUrl,
       orderId,
     });
 
-    // return payfetch.data;
+
 
 
 
