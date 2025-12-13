@@ -28,7 +28,7 @@ const productSchema = new mongoose.Schema({
       ref: "Tag",
     },
   ],
-  offer:{
+  offer:{ 
     type: mongoose.Schema.Types.ObjectId,
     ref: "Offer",
     default: null,

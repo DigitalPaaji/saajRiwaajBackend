@@ -14,6 +14,7 @@ const orderRoutes = require('./routes/OrderRoutes')
 const mailRoutes = require("./routes/MailRoutes");
 const offerRoutes = require('./routes/OfferRoute')
 const cartRoutes = require('./routes/CartRoute')
+const pagesRoutes = require('./routes/pagesRoutes')
 const  {createServer}= require("http");
  const { Server } = require("socket.io")
 
@@ -61,7 +62,7 @@ app.use('/order',orderRoutes);
 app.use("/api", mailRoutes); 
 app.use('/offer', offerRoutes);
 app.use("/cart",cartRoutes)
-
+app.use("/pages",pagesRoutes)
 
 const server= createServer(app);
 

@@ -8,7 +8,7 @@ const axios = require("axios");
 
 
 const qs= require("querystring")
-
+ 
 
 
 const getPhonePeToken = async () => {
@@ -95,12 +95,11 @@ const response = await axios.post(`${process.env.Sandbox}/checkout/v2/pay`,payDa
   const tokenUrl = response.data.redirectUrl;
 
     return res.json({
-      success: true,
+      success: true, 
       tokenUrl,
       orderId,
     });
 
-    // return payfetch.data;
 
 
 
