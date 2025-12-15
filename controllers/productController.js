@@ -12,10 +12,6 @@ exports.createProduct = async (req,res)=>{
     }
 }
 
-
-
-
-
 exports.getAllProducts = async (req,res)=>{
     try{
         const products = await Product.find()
@@ -58,7 +54,6 @@ exports.getProductsByCategory = async (req, res) => {
   }
 };
 
-
 exports.getProductsByOffer = async (req, res) => {
  
   try {
@@ -73,7 +68,6 @@ exports.getProductsByOffer = async (req, res) => {
     res.status(500).json({ error: "Error fetching products for this offer" });
   }
 };
-
 
 exports.deleteProductById = async (req,res)=>{
       try{

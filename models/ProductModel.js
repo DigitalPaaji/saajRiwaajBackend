@@ -49,6 +49,7 @@ const productSchema = new mongoose.Schema({
   discount: { type: Number, default: 0 },
   finalPrice: { type: Number, default: 0 },
   images: [{ type: String }],
+  barcode: { type: String,default:null },
   colorVariants: [
     {
       colorName: { type: String, required: true },
