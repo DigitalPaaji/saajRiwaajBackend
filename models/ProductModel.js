@@ -54,6 +54,7 @@ const productSchema = new mongoose.Schema({
     {
       colorName: { type: String, required: true },
       quantity: { type: Number, default: 1 },
+      images:[{ type: String }],
     },
   ],
 });

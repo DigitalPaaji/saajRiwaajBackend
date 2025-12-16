@@ -8,25 +8,24 @@ exports.sendMail = async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Transporter setup
     let transporter = nodemailer.createTransport({
-      service: "gmail", // or SMTP
+      service: "gmail", 
       auth: {
-        user: process.env.EMAIL_USER, // sender email
-        pass: process.env.EMAIL_PASS, // app password
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS,
       },
     });
 
-    // Mail content
+   
 let mailOptions = {
   from: `"${name}" <${email}>`,
-  to: process.env.EMAIL_TO, // your email where you receive contact msgs
+  to: process.env.EMAIL_TO, 
   subject: "New Contact Form Submission | Saaj Riwaaj",
 html: `
 <div style="background-color:#faf8ea; padding:10px; font-family:Arial, Helvetica, sans-serif; color:#333;">
   <table role="presentation" style="width:100%; max-width:700px; margin:0 auto; background:#ffffff; border:1px solid #e6e6e6; border-radius:8px;" cellspacing="0" cellpadding="0">
 
-    <!-- Header -->
+    
     <tr>
       <td style="background:#fff; border-bottom:2px solid #B67032; padding:15px; text-align:center;">
         <h2 style="margin:0; font-size:20px; color:#B67032; letter-spacing:0.5px;">Saaj Riwaaj</h2>
@@ -34,7 +33,7 @@ html: `
       </td>
     </tr>
 
-    <!-- Body -->
+    
     <tr>
       <td style="padding:20px;">
         <p style="font-size:16px; margin-bottom:15px; color:#444;">You have received a new message from your website contact form:</p>
