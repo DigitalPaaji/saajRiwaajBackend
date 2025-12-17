@@ -57,6 +57,7 @@ const productSchema = new mongoose.Schema({
       images:[{ type: String }],
     },
   ],
+  hidethings:[String],
 });
 
 productSchema.post("findOneAndDelete", async function (doc) {

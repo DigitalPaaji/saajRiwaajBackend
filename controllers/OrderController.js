@@ -332,6 +332,39 @@ else if(type=="order"){
   }
 };
 
+const hidethings= async(req,res)=>{
+  try {
+    const {type}= req.body;;
+    const {id}= req.params;
+        if (!type) {
+      return res.status(400).json({success: false, message: "type is required" });
+    }
+
+    const product = await Product.findById(id);
+
+
+      if (!product) {
+      return res.status(404).json({ success: false,message: "Product not found" });
+    }
+
+  if (!product.hidethings.includes(type)) {
+      product.hidethings.push(type);
+      await product.save();
+    }
+
+
+
+ return res.json({
+      success: true,
+    message:`Updated ${type}`
+    });
+
+
+  } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error" });
+
+  }
+}
 
 
 
@@ -346,4 +379,5 @@ module.exports = {
   phonepePay,
   phonepeStatus,
   phonePaycancel,
+  hidethings,
 };
