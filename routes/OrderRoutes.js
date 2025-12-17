@@ -11,6 +11,7 @@ router.post("/phonepe/cancel/:orderId", userAuth, orderController.phonePaycancel
 router.get("/my", userAuth, orderController.getUserOrders);
 router.put("/cancel/:id", userAuth, orderController.cancelOrder);
 router.get("/", adminAuth, orderController.getAllOrders);
+router.get("/user/:id", userAuth, orderController.getOrderById);
 router.get("/:id", adminAuth, orderController.getOrderById);
 router.put("/tracking/:id",adminAuth,orderController.updateTracking)
 

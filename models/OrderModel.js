@@ -8,6 +8,11 @@ const orderSchema = new mongoose.Schema({
       product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
       quantity: Number,
       price: Number,
+     color:{
+    type:mongoose.Schema.Types.ObjectId,
+    required: true
+  }
+
     }
   ],
 
@@ -32,6 +37,7 @@ const orderSchema = new mongoose.Schema({
   cancelreason:{type:String,default:null},
    trackingnumber:{type:String,default:null},
   amount: Number,
+  
 }, { timestamps: true });
 
 

@@ -74,13 +74,12 @@ const io = new Server(server,{
   },
   transports: ["websocket", "polling"]
 })
-
+ 
 io.on("connection", (socket) => {
-
- console.log(socket.id)
+  
   socket.on("buy", (msg) => {
     socket.broadcast.emit("buy", msg);
-  });
+  });  
  
   socket.on("disconnect", () => {
   });

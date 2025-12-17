@@ -42,15 +42,16 @@ const getPhonePeToken = async () => {
 
  const placeOrder = async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod, amount, type } = req.body;
+    const { items, shippingAddress, paymentMethod, amount } = req.body;
     const userId = req.user._id;
 
     const productOrder = await Order.create({
-      userId,
+      userId, 
       items,
       shippingAddress,
       paymentMethod,
       amount,
+    
       paymentStatus: "pending",
       orderStatus: "placed",
     });
