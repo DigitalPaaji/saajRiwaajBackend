@@ -32,10 +32,8 @@ const app = express()
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use(cors({
-    origin: [ process.env.FRONTEND_URL1,
-      process.env.FRONTEND_URL2,
-      process.env.FRONTEND_URL3,
-       
+    origin: [ process.env.FRONTEND_URL,
+        'https://saaj-riwaaj.vercel.app'
     ],
      methods: ["GET", "POST", "PUT", "DELETE"],
     credentials:true,
