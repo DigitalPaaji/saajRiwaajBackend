@@ -10,13 +10,7 @@ const userAuth = async (req, res, next) => {
   if (!token) return res.status(401).json({ message: "No token, authorization denied" });
 
   try {
-    // Detect which secret to use
-    // let decoded;
-    // if (req.cookies.userToken) {
-    //   decoded = jwt.verify(req.cookies.userToken, USER_JWT_SECRET);
-    // } else {
-    //   decoded = jwt.verify(req.cookies.adminToken, ADMIN_JWT_SECRET);
-    // }
+  
 
     const decoded = jwt.verify(token, USER_JWT_SECRET);
 
@@ -31,7 +25,6 @@ const userAuth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
-    console.error(err);
     return res.status(400).json({ message: "Invalid or expired Token" });
   }
 };

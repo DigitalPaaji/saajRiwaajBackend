@@ -12,7 +12,9 @@ exports.createCategory = async (req, res) => {
 
 exports.getCategories = async (req, res) => {
     const cats = await Category.find();
-    res.json({cats});
+    res.setHeader("Content-Type", "application/json");
+
+  return   res.status(200).json({cats});
 };
 
 

@@ -352,7 +352,7 @@ const hidethings= async(req,res)=>{
       await product.save();
     }
 
-
+ 
 
  return res.json({
       success: true,
