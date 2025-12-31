@@ -8,9 +8,9 @@ exports.createOffer = async (req, res) => {
     const slug = title.toLowerCase().replace(/ /g, "-");
 
     const offer = await Offer.create({ title, slug, image,minquantity,price });
-    res.json(offer);
+  return  res.json({success:true});
   } catch (err) {
-    res.status(500).json({ error: "Error creating offer" });
+    res.status(500).json({ error: "Error creating offer",success:false });
   }
 };
 
@@ -45,7 +45,7 @@ exports.getOfferByid = async (req, res) => {
     res.status(500).json({ error: "Server Error" });
   }
 };
-// 🗑️ Delete an offer + remove offer from all products
+
 exports.deleteOffer = async (req, res) => {
   try {
     const offerId = req.params.offerId;
