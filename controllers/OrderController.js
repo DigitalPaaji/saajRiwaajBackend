@@ -7,7 +7,8 @@ const Cart = require("../models/CartModel");
 const axios = require("axios");
 
 
-const qs= require("querystring")
+const qs= require("querystring");
+const sendOrderMail  = require("../helper/sendOrderMail");
  
 
 
@@ -123,7 +124,7 @@ const phonepeStatus = async (req, res) => {
   const userId = req.user._id;
   
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).populate("userId");
 
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
@@ -143,6 +144,10 @@ const phonepeStatus = async (req, res) => {
         const phonePeData = statusResponse.data;
 
  
+// console.log(order)
+
+await sendOrderMail(order)
+
 if(phonePeData.state=="COMPLETED"){
    order.paymentStatus = "paid";
      await order.save();
