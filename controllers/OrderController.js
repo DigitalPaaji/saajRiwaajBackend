@@ -146,14 +146,14 @@ const phonepeStatus = async (req, res) => {
  
 // console.log(order)
 
-await sendOrderMail(order)
 
 if(phonePeData.state=="COMPLETED"){
-   order.paymentStatus = "paid";
-     await order.save();
-      await Cart.deleteMany({ user: userId });
-          return res.json({ success: true, message: "Order created" });
-
+  order.paymentStatus = "paid";
+  await order.save();
+  await Cart.deleteMany({ user: userId });
+  await sendOrderMail(order)
+  return res.json({ success: true, message: "Order created" });
+  
 }
 else if(phonePeData.state=="FAILED"){
   await order.deleteOne()
