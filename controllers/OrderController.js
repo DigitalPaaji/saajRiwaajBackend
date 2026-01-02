@@ -143,10 +143,6 @@ const phonepeStatus = async (req, res) => {
     );
         const phonePeData = statusResponse.data;
 
- 
-// console.log(order)
-
-
 if(phonePeData.state=="COMPLETED"){
   order.paymentStatus = "paid";
   await order.save();
