@@ -27,8 +27,25 @@ const getCart= async(req,res)=>{
         message: "Product ID, quantity, and price are required",
       });
     }
+    if(buytype=="buy"){
+  await Cart.deleteMany({
+      user: userid,
+      
+      buytype
+    });
+await Cart.create({
+   user: userid,
+      product: productid,
+      price,
+      quantity,
+      color,
+      buytype
+})
 
-    const existingCartItem = await Cart.findOne({
+
+    }
+    else{
+ const existingCartItem = await Cart.findOne({
       user: userid,
       product: productid,
       color,
@@ -47,10 +64,13 @@ const getCart= async(req,res)=>{
       product: productid,
       price,
       quantity,
-      color,
-      buytype
+      color, 
+      buytype 
     });
     }
+    }
+
+   
 
  
 const allCart= await Cart.find({ user: userid,})
