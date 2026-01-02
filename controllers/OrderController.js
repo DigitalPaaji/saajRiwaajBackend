@@ -120,7 +120,8 @@ const response = await axios.post(`${process.env.Sandbox}/checkout/v2/pay`,payDa
 
 const phonepeStatus = async (req, res) => {
   try {
-    const { orderId } = req.params;
+    const { orderId} = req.params;
+    const {buytype} = req.body
   const userId = req.user._id;
   
 
@@ -139,14 +140,14 @@ const phonepeStatus = async (req, res) => {
           "Content-Type": "application/json",
           Authorization: `O-Bearer ${AUTH_TOKEN}`,
         },
-      }
+      } 
     );
         const phonePeData = statusResponse.data;
 
 if(phonePeData.state=="COMPLETED"){
   order.paymentStatus = "paid";
   await order.save();
-  await Cart.deleteMany({ user: userId });
+  await Cart.deleteMany({ user: userId,buytype:buytype });
   await sendOrderMail(order)
   return res.json({ success: true, message: "Order created" });
   

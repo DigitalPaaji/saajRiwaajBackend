@@ -18,7 +18,7 @@ const getCart= async(req,res)=>{
 
  const AddtoCart = async (req, res) => {
   try {
-    const { productid, quantity, price,color } = req.body;
+    const { productid, quantity, price,color,buytype } = req.body;
     const userid = req.user._id;
 
     if (!productid || !quantity || !price) {
@@ -31,7 +31,8 @@ const getCart= async(req,res)=>{
     const existingCartItem = await Cart.findOne({
       user: userid,
       product: productid,
-      color
+      color,
+      buytype
     });
 
     if (existingCartItem) {
@@ -46,7 +47,8 @@ const getCart= async(req,res)=>{
       product: productid,
       price,
       quantity,
-      color
+      color,
+      buytype
     });
     }
 

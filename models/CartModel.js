@@ -1,3 +1,4 @@
+const { type } = require("express/lib/response");
 const mongoose = require("mongoose");
 
 const CartSchema = mongoose.Schema({
@@ -26,8 +27,12 @@ const CartSchema = mongoose.Schema({
 color:{
     type:String,
     default:null
+},
+buytype:{
+type:String,
+enum:["cart","buy"],
+default:"cart",
 }
-
 
 },{timestamps:true});
 
