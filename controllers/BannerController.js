@@ -14,11 +14,15 @@ exports.getAllBanners = async (req, res) => {
 // controllers/BannerController.js
 exports.addBanner = async (req, res) => {
   try {
-    const { desktopImage, mobileImage } = req.body;
-
-    if (!desktopImage || !mobileImage) {
-      return res.status(400).json({ message: 'Both desktopImage and mobileImage are required' });
+   
+ if (!req.files?.desktopImage || !req.files?.mobileImage) {
+      return res.status(400).json({
+        message: "Both desktopImage and mobileImage are required"
+      });
     }
+
+       const desktopImage = req.files.desktopImage[0].filename;
+    const mobileImage = req.files.mobileImage[0].filename;
 
     const newBanner = new Banner({ desktopImage, mobileImage });
     await newBanner.save();
