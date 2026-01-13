@@ -1,4 +1,4 @@
-const { deleteImage } = require('../helper/deleteImage');
+const  deleteImage  = require('../helper/deleteImage');
 const Banner = require('../models/BannerModel');
 
 // Get all banners (sorted by order)
