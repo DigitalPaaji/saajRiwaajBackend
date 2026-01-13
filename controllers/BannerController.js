@@ -1,3 +1,4 @@
+const { deleteImage } = require('../helper/deleteImage');
 const Banner = require('../models/BannerModel');
 
 // Get all banners (sorted by order)
@@ -36,9 +37,17 @@ exports.addBanner = async (req, res) => {
 // Delete a banner
 exports.deleteBanner = async (req, res) => {
   try {
-    const banner = await Banner.findByIdAndDelete(req.params.id);
+
+    const banner = await Banner.findById(req.params.id);
+    
     if (!banner) return res.status(404).json({ message: 'Banner not found' });
+   
+    await deleteImage(banner.desktopImage)
+    await deleteImage(banner.mobileImage);
+    await banner.deleteOne()
+
     res.status(200).json({ message: 'Deleted successfully' });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
