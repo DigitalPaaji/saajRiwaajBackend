@@ -1,8 +1,12 @@
 const express = require('express')
 const router = express.Router()
 const productController = require('../controllers/productController')
+const upload = require('../helper/saveImage')
 
-router.post('/add',productController.createProduct)
+router.post('/add',  upload.fields([
+    { name: "images", maxCount: 10 },
+    { name: "barcode", maxCount: 1 },
+  ]),productController.createProduct)
 router.get('/',productController.getAllProducts)
 router.get('/id/:id',productController.getProductById)
 router.delete('/id/:id',productController.deleteProductById)

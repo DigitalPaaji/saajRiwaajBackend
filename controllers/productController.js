@@ -4,9 +4,34 @@ const SubCategoryModel = require('../models/SubCategoryModel')
 
 exports.createProduct = async (req,res)=>{
     try{
-        const newProduct = new Product(req.body)
+
+const data= req.body;
+let images= req.files.images;
+let allImges=[]
+images.forEach((item)=>{
+allImges.push(item.filename)
+})
+let fullbarcode = req.files.barcode
+
+let barcode = ""
+
+if(fullbarcode){
+  
+fullbarcode.forEach((item)=>{
+barcode = item.filename
+})
+
+}
+ const description = JSON.parse(req.body.description);
+  const tags = JSON.parse(req.body.tags);
+  const colorVariants = JSON.parse(req.body.colorVariants);
+
+  const isFeatured = req.body.isFeatured === "true";
+  const isNewArrival = req.body.isNewArrival === "true";
+  const allproductData = {...req.body,description,tags,colorVariants,isFeatured,isNewArrival,images:allImges,barcode}
+        const newProduct = new Product(allproductData)
         const saved = await newProduct.save()
-        res.status(200).json(saved)
+        res.status(200).json({saved,fullbarcode})
     }catch(err){
         res.status(500).json({error:err.message})
     }

@@ -6,10 +6,11 @@ const {
   deleteOffer ,
   getOfferByid
 } = require("../controllers/OfferController");
+const upload = require("../helper/saveImage");
 
 const router = express.Router();
 
-router.post("/", createOffer);               // Create offer
+router.post("/",upload.single("image"), createOffer);               // Create offer
 router.get("/", getOffers);                  // Get all offers
 router.get("/byid/:slug", getOfferByid);        // Get single offer
 router.get("/:slug", getOfferBySlug);        // Get single offer

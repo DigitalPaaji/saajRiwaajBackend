@@ -1,12 +1,13 @@
+const deleteImage = require('../helper/deleteImage');
 const Offer = require('../models/OfferModel');
 const Product = require('../models/ProductModel'); // IMPORTANT
 
 // Create an offer
 exports.createOffer = async (req, res) => {
   try {
-    const { title, image,minquantity,price } = req.body;
+    const { title,minquantity,price } = req.body;
     const slug = title.toLowerCase().replace(/ /g, "-");
-
+     const image= req.file.filename;
     const offer = await Offer.create({ title, slug, image,minquantity,price });
   return  res.json({success:true});
   } catch (err) {
@@ -46,16 +47,17 @@ exports.getOfferByid = async (req, res) => {
   }
 };
 
-exports.deleteOffer = async (req, res) => {
+exports.deleteOffer = async (req, res) => { 
   try {
     const offerId = req.params.offerId;
 
-    const deleted = await Offer.findByIdAndDelete(offerId);
+    const deleted = await Offer.findById(offerId);
     if (!deleted) {
       return res.status(404).json({ error: "Offer not found" });
     }
 
-    // Remove offer from all products
+   await deleteImage(deleted.image)
+   await deleted.deleteOne()
     await Product.updateMany(
       { offer: offerId },
       { $unset: { offer: "" } }
