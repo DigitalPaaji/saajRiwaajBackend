@@ -1,3 +1,4 @@
+const deleteImage = require('../helper/deleteImage');
 const OfferModel = require('../models/OfferModel')
 const Product = require('../models/ProductModel')
 const SubCategoryModel = require('../models/SubCategoryModel')
@@ -53,14 +54,14 @@ exports.getAllProducts = async (req,res)=>{
 exports.getProductById = async (req,res)=>{
       try{
         const product = await Product.findById(req.params.id)
-      .populate('category', 'name')
-      .populate('tags', 'name')
-  
+      // .populate('category', 'name')
+      // .populate('tags', 'name')
+   
 
         if(!product) return res.status(404).json({message:'Not Found'})
         res.status(200).json(product)
     }
-    catch(err){
+    catch(err){ 
         res.status(500).json({error:err.message})
         
     }
@@ -106,38 +107,81 @@ exports.deleteProductById = async (req,res)=>{
 }
 
 exports.updateProductById = async (req, res) => {
-  try {
+ try {
+    /* ------------------ Parse JSON fields ------------------ */
+    const parse = (v, fallback) => {
+      try {
+        return v ? JSON.parse(v) : fallback;
+      } catch {
+        return fallback;
+      }
+    };
+
+    req.body.description   = parse(req.body.description, {});
+    req.body.offer         = parse(req.body.offer, []);
+    req.body.tags          = parse(req.body.tags, []);
+    req.body.colorVariants = parse(req.body.colorVariants, []);
+    req.body.hidethings    = parse(req.body.hidethings, []);
+    req.body.images        = parse(req.body.images, []);
+    const deleteImages     = parse(req.body.deleteImage, []);
+
+    req.body.isFeatured    = req.body.isFeatured === "true";
+    req.body.isNewArrival  = req.body.isNewArrival === "true";
+    req.body.deleteBarcode = req.body.deleteBarcode === "true";
+
+    /* ------------------ Category validation ------------------ */
     const { category, subcategory } = req.body;
 
-     
     if (category) {
       const subcategories = await SubCategoryModel.find({ category });
 
-      // If no subcategories exist, force subcategory to null
-      if (subcategories.length === 0) {
+      if (!subcategories.length) {
         req.body.subcategory = null;
-      }
-
-      // OR, if the subcategory sent doesn't belong to this category, remove it
-      const isValidSub = subcategories.find(
-        (s) => String(s._id) === String(subcategory)
-      );
-      if (!isValidSub) {
-        req.body.subcategory = null;
+      } else {
+        const isValidSub = subcategories.some(
+          (s) => String(s._id) === String(subcategory)
+        );
+        if (!isValidSub) req.body.subcategory = null;
       }
     }
 
-    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    /* ------------------ Fetch product ------------------ */
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
-    if (!updated) return res.status(404).json({ message: "Not Found" });
+    /* ------------------ Delete old product images ------------------ */
+    if (deleteImages.length) {
+      deleteImages.forEach((filename) =>  deleteImage(filename));
+    }
 
+    /* ------------------ Add new images ------------------ */
+    if (req.files?.newImages) {
+      const uploadedImages = req.files.newImages.map((f) => f.filename);
+      req.body.images = [...req.body.images, ...uploadedImages];
+    }
 
+    /* ------------------ Barcode delete / replace ------------------ */
+    if (req.body.deleteBarcode && product.barcode) {
+      deleteImage(product.barcode);
+      req.body.barcode = null;
+    }
 
+    if (req.files?.newBarCode?.[0]) {
+      if (product.barcode) deleteImage(product.barcode);
+      req.body.barcode = req.files.newBarCode[0].filename;
+    }
 
+    /* ------------------ Update product ------------------ */
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
 
     res.status(200).json(updated);
+
   } catch (err) {
     console.error("Update error:", err);
     res.status(500).json({ error: err.message });
