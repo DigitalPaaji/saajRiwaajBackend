@@ -27,14 +27,11 @@ exports.deleteCategory = async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
     }
 
-    // Find products belonging to this category
     const productsToDelete = await ProductModel.find({ category: req.params.id });
     const productIds = productsToDelete.map((p) => p._id);
 
-    // Delete products
     await ProductModel.deleteMany({ category: req.params.id });
 
-    // Remove deleted products from users' cart & wishlist
     if (productIds.length > 0) {
       await User.updateMany(
         {},

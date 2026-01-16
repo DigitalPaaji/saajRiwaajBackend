@@ -4,6 +4,7 @@ const path = require("path")
 
 const deleteImage=async(fileNAme)=>{
 const fullPAth = path.join(process.cwd(),"uploads",fileNAme);
+
 if(fs2.existsSync(fullPAth)){await fs.unlink(fullPAth)}
 
 }
