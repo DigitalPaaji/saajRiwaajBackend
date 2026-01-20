@@ -1,4 +1,3 @@
-const { default: mongoose } = require('mongoose');
 const deleteImage = require('../helper/deleteImage');
 const OfferModel = require('../models/OfferModel')
 const Product = require('../models/ProductModel')
@@ -70,30 +69,32 @@ exports.getProductById = async (req,res)=>{
 
 exports.getProductsByCategory = async (req, res) => {
   try {
-// 1. Use Aggregate to get random data
-const products = await Product.aggregate([
-    // Stage 1: Filter by category
-    // Note: You must cast the ID string to a generic ObjectId for aggregation
-    { 
-        $match: { 
-            category: new mongoose.Types.ObjectId(req.params.categoryId) 
-        } 
-    },
-    
-    // Stage 2: Select 15 random documents
-    { 
-        $sample: { size: 15 } 
-    }
-]);
+  const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const skip = (page - 1) * limit;
 
-// 2. Populate the results
-// Since aggregate returns plain objects, we use the model to populate them
-await Product.populate(products, [
-    { path: 'category', select: 'name' },
-    { path: 'subcategory', select: 'name' }
-]);
 
-    res.status(200).json(products);
+       const categoryId = req.params.categoryId;
+
+    const products = await Product.find({ category: categoryId })
+      .populate("category", "name")
+      .populate("subcategory", "name")
+      .sort({ createdAt: -1 }) // newest first
+      .skip(skip)
+      .limit(limit);
+
+      const total = await Product.countDocuments({ category: categoryId });
+
+  
+    res.status(200).json({
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
