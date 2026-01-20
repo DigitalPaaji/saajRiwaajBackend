@@ -69,7 +69,7 @@ exports.getProductById = async (req,res)=>{
 
 exports.getProductsByCategory = async (req, res) => {
   try {
-    const products = await Product.find({ category: req.params.categoryId }).limit(15)
+    const products = await Product.find([{$match: { category: req.params.categoryId} },{$sample: { size: 15 }}])
       .populate('category', 'name')
       .populate('subcategory', 'name')
 
