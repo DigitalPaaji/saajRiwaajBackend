@@ -69,9 +69,12 @@ exports.getProductById = async (req,res)=>{
 
 exports.getProductsByCategory = async (req, res) => {
   try {
-    const products = await Product.find([{$match: { category: req.params.categoryId} },{$sample: { size: 15 }}])
-      .populate('category', 'name')
-      .populate('subcategory', 'name')
+    const products = await Product.aggregate([{$match: { category: req.params.categoryId} },{$sample: { size: 15 }}])
+    
+    await Product.populate(products, [
+    { path: 'category', select: 'name' },
+    { path: 'subcategory', select: 'name' }
+]);
 
     res.status(200).json(products);
   } catch (err) {
