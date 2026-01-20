@@ -69,16 +69,9 @@ exports.getProductById = async (req,res)=>{
 
 exports.getProductsByCategory = async (req, res) => {
   try {
- const productsRaw = await Product.aggregate([
-  { $match: { category: mongoose.Types.ObjectId(req.params.categoryId) } },
-  { $sample: { size: 15 } }, // randomly select 15 documents
-]);
-
-// Then populate category and subcategory
-const products = await Product.populate(productsRaw, [
-  { path: "category", select: "name" },
-  { path: "subcategory", select: "name" },
-]);
+    const products = await Product.find({ category: req.params.categoryId }).limit(15)
+      .populate('category', 'name')
+      .populate('subcategory', 'name')
 
     res.status(200).json(products);
   } catch (err) {
