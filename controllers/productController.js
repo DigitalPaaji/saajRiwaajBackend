@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const deleteImage = require('../helper/deleteImage');
 const OfferModel = require('../models/OfferModel')
 const Product = require('../models/ProductModel')
@@ -69,9 +70,25 @@ exports.getProductById = async (req,res)=>{
 
 exports.getProductsByCategory = async (req, res) => {
   try {
-    const products = await Product.aggregate([{$match: { category: req.params.categoryId} },{$sample: { size: 15 }}])
+// 1. Use Aggregate to get random data
+const products = await Product.aggregate([
+    // Stage 1: Filter by category
+    // Note: You must cast the ID string to a generic ObjectId for aggregation
+    { 
+        $match: { 
+            category: new mongoose.Types.ObjectId(req.params.categoryId) 
+        } 
+    },
     
-    await Product.populate(products, [
+    // Stage 2: Select 15 random documents
+    { 
+        $sample: { size: 15 } 
+    }
+]);
+
+// 2. Populate the results
+// Since aggregate returns plain objects, we use the model to populate them
+await Product.populate(products, [
     { path: 'category', select: 'name' },
     { path: 'subcategory', select: 'name' }
 ]);
