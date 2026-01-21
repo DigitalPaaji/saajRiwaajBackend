@@ -73,17 +73,36 @@ exports.getProductsByCategory = async (req, res) => {
     const limit = 16;
     const skip = (page - 1) * limit;
 
+     const { minPrice, maxPrice, tags,subcategory } = req.query;
 
        const categoryId = req.params.categoryId;
+const filter = {
+      category: categoryId
+    };
 
-    const products = await Product.find({ category: categoryId })
+
+        if (minPrice || maxPrice) {
+      filter.finalPrice = {};
+      if (minPrice) filter.finalPrice.$gte = Number(minPrice);
+      if (maxPrice) filter.finalPrice.$lte = Number(maxPrice);
+    }
+
+
+    if(subcategory){
+  filter.subcategory = subcategory;
+    }
+    if (tags) {
+      const tagsArray = tags.split(","); 
+      filter.tags = { $in: tagsArray };
+    }
+    const products = await Product.find(filter)
       .populate("category", "name")
       .populate("subcategory", "name")
       .sort({ createdAt: -1 }) 
       .skip(skip)
       .limit(limit).select(" name category subcategory price finalPrice discount images description ");
 
-      const total = await Product.countDocuments({ category: categoryId });
+      const total = await Product.countDocuments(filter);
 
   
     res.status(200).json({
