@@ -79,7 +79,7 @@ exports.getProductsByCategory = async (req, res) => {
     const products = await Product.find({ category: categoryId })
       .populate("category", "name")
       .populate("subcategory", "name")
-      .sort({ createdAt: -1 }) // newest first
+      .sort({ createdAt: -1 }) 
       .skip(skip)
       .limit(limit);
 

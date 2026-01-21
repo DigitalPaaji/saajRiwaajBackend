@@ -31,9 +31,10 @@ const app = express()
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use(cors({
-    origin: [ process.env.FRONTEND_URL1,process.env.FRONTEND_URL2,
-        'http://72.60.201.230:3001'
-    ],
+    // origin: [ process.env.FRONTEND_URL1,process.env.FRONTEND_URL2,
+    //     'http://72.60.201.230:3001'
+    // ],
+    origin:"*",
      methods: ["GET", "POST", "PUT", "DELETE"],
     credentials:true,
 }))
