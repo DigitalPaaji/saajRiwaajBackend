@@ -17,6 +17,7 @@ router.put('/id/:id', upload.fields([
 router.get('/category/:categoryId', productController.getProductsByCategory);
 router.get('/featured', productController.getFeaturedProducts);
 router.get('/offer/:offerId', productController.getProductsByOffer);
+router.get('/search/:text', productController.searchProduct);
 
 
 

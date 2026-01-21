@@ -81,7 +81,7 @@ exports.getProductsByCategory = async (req, res) => {
       .populate("subcategory", "name")
       .sort({ createdAt: -1 }) 
       .skip(skip)
-      .limit(limit);
+      .limit(limit).select(" name category subcategory price finalPrice discount images description ");
 
       const total = await Product.countDocuments({ category: categoryId });
 
@@ -221,3 +221,33 @@ exports.getFeaturedProducts = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+exports.searchProduct=async(req,res)=>{
+  try {
+ const { text } = req.params;
+
+    if (!text || text.trim() === "") {
+      return res.status(200).json({
+        success: true,
+        data: []
+      });
+    }
+
+
+    const products = await Product.find({
+      name: { $regex: text, $options: "i" }
+    })  .select("name images description ")   
+      .limit(10);    
+
+    res.status(200).json({
+      success: true,
+      data: products
+    });
+  } catch (error) {
+     res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+}
