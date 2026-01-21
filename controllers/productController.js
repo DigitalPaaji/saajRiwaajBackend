@@ -40,7 +40,7 @@ barcode = item.filename
 
 exports.getAllProducts = async (req,res)=>{
     try{
-        const products = await Product.find()
+        const products = await Product.find().limit(16)
         .populate('category','name')
         .populate('tags','name')
         .populate('subcategory','name')
