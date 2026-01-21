@@ -91,6 +91,7 @@ const filter = {
     if(subcategory){
   filter.subcategory = subcategory;
     }
+    
     if (tags) {
       const tagsArray = tags.split(","); 
       filter.tags = { $in: tagsArray };
