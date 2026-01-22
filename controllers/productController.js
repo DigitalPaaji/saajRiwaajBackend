@@ -43,14 +43,19 @@ exports.getAllProducts = async (req,res)=>{
  const page = parseInt(req.query.page) || 1;
     const limit = 16;
     const skip = (page - 1) * limit;
-
-        const products = await Product.find().skip(skip)
+ let filter={};
+ if(req.query.search){
+  filter.name = { 
+    $regex: req.query.search, 
+    $options: "i" 
+  }; }
+        const products = await Product.find(filter).skip(skip)
       .limit(limit)
         .populate('category','name')
         .populate('tags','name')
         .populate('subcategory','name').lean();
         
-           const total = await Product.countDocuments();
+           const total = await Product.countDocuments(filter);
         res.status(200).json({products,
           pagination: {
         page,
@@ -283,4 +288,9 @@ exports.searchProduct=async(req,res)=>{
       message: error.message
     });
   }
+}
+
+
+exports.getAllGraphData=async(req,res)=>{
+
 }
