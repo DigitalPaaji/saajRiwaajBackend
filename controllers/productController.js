@@ -40,11 +40,24 @@ barcode = item.filename
 
 exports.getAllProducts = async (req,res)=>{
     try{
-        const products = await Product.find().limit(16)
+ const page = parseInt(req.query.page) || 1;
+    const limit = 16;
+    const skip = (page - 1) * limit;
+
+        const products = await Product.find().skip(skip)
+      .limit(limit)
         .populate('category','name')
         .populate('tags','name')
-        .populate('subcategory','name')
-        res.status(200).json({products})
+        .populate('subcategory','name').lean();
+        
+           const total = await Product.countDocuments();
+        res.status(200).json({products,
+          pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }})
     }
     catch(err){
         res.status(500).json({error:err.message})
