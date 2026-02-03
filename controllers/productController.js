@@ -107,7 +107,7 @@ const filter = {
 
 
     if(subcategory){
-  filter?.subcategory = subcategory;
+  filter["subcategory"] = subcategory;
     }
     
     if (tags) {
