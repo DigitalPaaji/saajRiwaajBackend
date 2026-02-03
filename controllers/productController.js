@@ -107,7 +107,7 @@ const filter = {
 
 
     if(subcategory){
-  filter.subcategory = subcategory;
+  filter?.subcategory = subcategory;
     }
     
     if (tags) {
@@ -294,3 +294,41 @@ exports.searchProduct=async(req,res)=>{
 exports.getAllGraphData=async(req,res)=>{
 
 }
+
+exports.getRandomProduct = async (req, res) => {
+  try {
+    const categoryId = req.params.categoryId;
+
+    const filter = { category: categoryId };
+
+    // Count ONLY category products
+    const count = await Product.countDocuments(filter);
+
+    if (count === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No products found",
+      });
+    }
+
+    const random = Math.floor(Math.random() * count);
+
+    const products = await Product.find(filter)
+      .skip(random)
+      .limit(16)
+      .select(" name category subcategory price finalPrice discount images description ");
+
+    return res.status(200).json({
+      success: true,
+      products,
+    });
+
+  } catch (error) {
+    console.error("Random Product Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch random products",
+    });
+  }
+};
