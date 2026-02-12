@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const deleteImage = require('../helper/deleteImage');
 const OfferModel = require('../models/OfferModel')
 const Product = require('../models/ProductModel')
