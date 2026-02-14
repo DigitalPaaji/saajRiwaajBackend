@@ -28,7 +28,11 @@ const app = express()
 
 
 
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads"),{
+  maxAge: '30d',
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+  }}));
 
 app.use(cors({
     origin: [ process.env.FRONTEND_URL1,process.env.FRONTEND_URL2,
