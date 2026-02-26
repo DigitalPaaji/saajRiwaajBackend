@@ -18,6 +18,7 @@ exports.getCategories = async (req, res) => {
 
 exports.getByCategory = async (req, res) => {
     try {
+        
         const subs = await SubCategory.find({ category: req.params.categoryId });
         res.json(subs);
     } catch (err) {

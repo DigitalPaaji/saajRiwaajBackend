@@ -1,3 +1,4 @@
+const { redisClient } = require('../helper/redisConfig');
 const Category = require('../models/CategoryModel');
 const ProductModel = require('../models/ProductModel');
 
@@ -11,8 +12,20 @@ exports.createCategory = async (req, res) => {
 };
 
 exports.getCategories = async (req, res) => {
+  const cashkey = "category";
+
+const cashedData= await redisClient.get(cashkey)
+if(cashedData){
+    return   res.status(200).json({cats:JSON.parse(cashedData)});
+}
+
+     
     const cats = await Category.find();
     res.setHeader("Content-Type", "application/json");
+
+    await redisClient.set(cashkey,JSON.stringify(cats),{
+      EX: 60 * 5,
+    })
 
   return   res.status(200).json({cats});
 };
