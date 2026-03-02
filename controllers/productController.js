@@ -247,7 +247,7 @@ exports.updateProductById = async (req, res) => {
     }
 
 
-     if (req.body.deletethumbnail && product.barcode) {
+     if (req.body.deletethumbnail && product.thumbnail) {
       deleteImage(product.thumbnail);
       req.body.thumbnail = null;
     }
