@@ -197,7 +197,7 @@ exports.updateProductById = async (req, res) => {
     req.body.isFeatured    = req.body.isFeatured === "true";
     req.body.isNewArrival  = req.body.isNewArrival === "true";
     req.body.deleteBarcode = req.body.deleteBarcode === "true";
-    req.body.deletethumbnail = req.body.deletethumbnail === "true";
+    req.body.deletethumbnail = req.body.deletethumbnail == "true";
 
     
 
