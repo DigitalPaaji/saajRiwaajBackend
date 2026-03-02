@@ -14,9 +14,9 @@ images.forEach((item)=>{
 allImges.push(item.filename)
 })
 let fullbarcode = req.files.barcode
-let thumbnail= req.files.thumbnail[0].filename;
+let fullthumbnail= req.files.thumbnail;
 let barcode = ""
-
+let thumbnail = ""
 if(fullbarcode){
   
 fullbarcode.forEach((item)=>{
@@ -24,6 +24,16 @@ barcode = item.filename
 })
 
 }
+
+if(fullthumbnail){
+  
+fullthumbnail.forEach((item)=>{
+thumbnail = item.filename
+})
+
+}
+
+
  const description = JSON.parse(req.body.description);
   const tags = JSON.parse(req.body.tags);
   const colorVariants = JSON.parse(req.body.colorVariants);
@@ -120,7 +130,7 @@ const filter = {
       .populate("subcategory", "name")
       .sort({ createdAt: -1 }) 
       .skip(skip)
-      .limit(limit).select(" name category subcategory price finalPrice discount images description ");
+      .limit(limit).select(" name category subcategory price finalPrice discount thumbnail  images description ");
 
       const total = await Product.countDocuments(filter);
 
