@@ -12,12 +12,12 @@ if(cachedData){
      console.log("✅ Serving from cache");
       return res.status(200).json(JSON.parse(cachedData)); 
 }
-console.log("new")
+
 
     const banners = await Banner.find().sort({ order: 1 });
 
    await redisClient.set(bannerKey, JSON.stringify(banners), {
-      EX: 60 * 5,  // 5 minutes
+      EX: 60 * 5, 
     });
     res.status(200).json(banners);
   } catch (err) {
@@ -25,8 +25,7 @@ console.log("new")
   }
 };
 
-// Add new banner
-// controllers/BannerController.js
+
 exports.addBanner = async (req, res) => {
   try {
    

@@ -14,7 +14,7 @@ images.forEach((item)=>{
 allImges.push(item.filename)
 })
 let fullbarcode = req.files.barcode
-
+let thumbnail= req.files.thumbnail[0].filename;
 let barcode = ""
 
 if(fullbarcode){
@@ -30,7 +30,7 @@ barcode = item.filename
 
   const isFeatured = req.body.isFeatured === "true";
   const isNewArrival = req.body.isNewArrival === "true";
-  const allproductData = {...req.body,description,tags,colorVariants,isFeatured,isNewArrival,images:allImges,barcode}
+  const allproductData = {...req.body,description,tags,colorVariants,isFeatured,isNewArrival,images:allImges,barcode,thumbnail}
         const newProduct = new Product(allproductData)
         const saved = await newProduct.save()
         res.status(200).json({saved,fullbarcode})
@@ -167,7 +167,7 @@ exports.deleteProductById = async (req,res)=>{
 
 exports.updateProductById = async (req, res) => {
  try {
-    /* ------------------ Parse JSON fields ------------------ */
+  
     const parse = (v, fallback) => {
       try {
         return v ? JSON.parse(v) : fallback;
@@ -187,8 +187,12 @@ exports.updateProductById = async (req, res) => {
     req.body.isFeatured    = req.body.isFeatured === "true";
     req.body.isNewArrival  = req.body.isNewArrival === "true";
     req.body.deleteBarcode = req.body.deleteBarcode === "true";
+    req.body.deletethumbnail = req.body.deletethumbnail === "true";
 
-    /* ------------------ Category validation ------------------ */
+    
+
+
+
     const { category, subcategory } = req.body;
 
     if (category) {
@@ -232,7 +236,18 @@ exports.updateProductById = async (req, res) => {
       req.body.barcode = req.files.newBarCode[0].filename;
     }
 
-    /* ------------------ Update product ------------------ */
+
+     if (req.body.deletethumbnail && product.barcode) {
+      deleteImage(product.thumbnail);
+      req.body.thumbnail = null;
+    }
+
+    if (req.files?.newthumbnail?.[0]) {
+      if (product.thumbnail) deleteImage(product.thumbnail);
+      req.body.thumbnail = req.files.newthumbnail[0].filename;
+    }
+
+
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,

@@ -50,6 +50,7 @@ const productSchema = new mongoose.Schema({
   finalPrice: { type: Number, default: 0 },
   images: [{ type: String }],
   barcode: { type: String,default:null },
+  thumbnail: { type: String,default:null },
   colorVariants: [
     {
       colorName: { type: String, required: true },
