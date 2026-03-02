@@ -256,7 +256,7 @@ exports.updateProductById = async (req, res) => {
       if (product.thumbnail) deleteImage(product.thumbnail);
       req.body.thumbnail = req.files.newthumbnail[0].filename;
     }
-
+console.log( req.body)
 
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
