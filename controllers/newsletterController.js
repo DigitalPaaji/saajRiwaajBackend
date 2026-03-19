@@ -19,7 +19,7 @@ try {
         message: "Already subscribed",
       });
     }
-   const couponcode = "xyzzzz"
+   const couponcode = "SAAJRIWAAJ25"
 const newsletter = await Newsletter.create({ email });
 
     // send mail AFTER saving

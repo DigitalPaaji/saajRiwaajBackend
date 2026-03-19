@@ -50,7 +50,7 @@ const sendCouponMail = async (email, couponcode) => {
       
       <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #a8a29e;">
         <p>If you have any questions, simply reply to this email.</p>
-        <p>© ${new Date().getFullYear()} Your Jewelry Store. All rights reserved.</p>
+        <p>© ${new Date().getFullYear()} saajriwaaj. All rights reserved.</p>
       </div>
 
     </div>
@@ -58,7 +58,7 @@ const sendCouponMail = async (email, couponcode) => {
 
   try {
     const info = await transporter.sendMail({
-      from: `"Lux Jewelry" <${process.env.EMAIL_USER}>`,
+      from: `"Saajriwaaj" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Welcome! 💎 Your 25% OFF code is inside.",
       html: html, // Attach the HTML template here
