@@ -12,6 +12,5 @@ const newsletterSchema =  mongoose.Schema({
     timestamps:true
 });
 
-const Newsletter = mongoose.model("newsletter",newsletterSchema);
+module.exports  = mongoose.model("newsletter",newsletterSchema);
 
-module.export = Newsletter;
