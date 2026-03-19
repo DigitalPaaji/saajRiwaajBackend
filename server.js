@@ -15,6 +15,7 @@ const mailRoutes = require("./routes/MailRoutes");
 const offerRoutes = require('./routes/OfferRoute')
 const cartRoutes = require('./routes/CartRoute')
 const pagesRoutes = require('./routes/pagesRoutes')
+const NewsletterRoutes = require('./routes/newsLetterRoute')
 
 
 
@@ -75,6 +76,7 @@ app.use("/api", mailRoutes);
 app.use('/offer', offerRoutes);
 app.use("/cart",cartRoutes)
 app.use("/pages",pagesRoutes)
+app.use("/newsletter",NewsletterRoutes)
 
 
 

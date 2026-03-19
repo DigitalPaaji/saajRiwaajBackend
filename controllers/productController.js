@@ -218,24 +218,21 @@ exports.updateProductById = async (req, res) => {
       }
     }
 
-    /* ------------------ Fetch product ------------------ */
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    /* ------------------ Delete old product images ------------------ */
     if (deleteImages.length) {
       deleteImages.forEach((filename) =>  deleteImage(filename));
     }
 
-    /* ------------------ Add new images ------------------ */
+
     if (req.files?.newImages) {
       const uploadedImages = req.files.newImages.map((f) => f.filename);
       req.body.images = [...req.body.images, ...uploadedImages];
     }
 
-    /* ------------------ Barcode delete / replace ------------------ */
     if (req.body.deleteBarcode && product.barcode) {
       deleteImage(product.barcode);
       req.body.barcode = null;
@@ -271,6 +268,9 @@ exports.updateProductById = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+
 
 exports.getFeaturedProducts = async (req, res) => {
   try {
@@ -373,7 +373,6 @@ exports.getRandomProduct = async (req, res) => {
         }
       },
 
-      // ALWAYS try to fetch 16 random
       {
         $sample: { size: 16 }
       },
