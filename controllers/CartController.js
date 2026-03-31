@@ -1,5 +1,6 @@
 const User = require("../models/UserModel");
-const Cart = require("../models/CartModel")
+const Cart = require("../models/CartModel");
+const Product = require("../models/ProductModel");
 
 const getCart= async(req,res)=>{
     try {
@@ -33,6 +34,8 @@ const getCart= async(req,res)=>{
       
       buytype
     });
+
+    
 await Cart.create({
    user: userid,
       product: productid,
@@ -73,7 +76,7 @@ await Cart.create({
    
 
  
-const allCart= await Cart.find({ user: userid,})
+const allCart= await Cart.find({ user: userid,}).populate("product")
     return res.json({
       success: true,
       message: "Product added to cart",
@@ -188,14 +191,76 @@ const allCart= await Cart.find({ user: userid,})
 
 
 
+const getNoUserCart = async(req,res)=>{
+  try {
+    const {productArry}= req.body;
 
+
+
+ if (!productArry || productArry.length === 0) {
+      return res.json({ items: [] });
+    }
+
+   const productIds = productArry.map(item => item.product);
+
+  
+    const products = await Product.find({
+      _id: { $in: productIds }
+    }).select("price name images colorVariants finalPrice discount offer");
+
+    const productMap = new Map(); 
+    products.forEach(p => {
+      productMap.set(p._id.toString(), p);
+    }); 
+
+    
+   const finalProducts = productArry.map(item => {
+      const product = productMap.get(item.product);
+
+      if (!product) return null;
+
+      // variant find karo
+      const variant = product.colorVariants.find(
+        v => v._id.toString() === item.color
+      );
+
+      return {
+        product: product, 
+
+        price: variant?.price || product.finalPrice || product.price, 
+
+        quantity: item.quantity, // ✅ quantity
+
+        color: item.color, // ✅ colorId
+
+        // optional (useful for frontend)
+        selectedVariant: variant || null
+      };
+    }).filter(Boolean);
+
+    
+
+    return res.json({
+      success: true,
+      items: finalProducts
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+}
 
 
 module.exports={
     getCart,
     AddtoCart,
     removeFromCart,
-    addQuantity
+    addQuantity,
+    getNoUserCart
 }
 
 

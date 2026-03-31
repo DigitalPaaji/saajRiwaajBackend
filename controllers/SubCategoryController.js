@@ -12,7 +12,7 @@ exports.createCategory = async (req, res) => {
 };
 
 exports.getCategories = async (req, res) => {
-    const cats = await SubCategory.find();
+    const cats = await SubCategory.find().populate("category");
     res.json({cats});
 };
 

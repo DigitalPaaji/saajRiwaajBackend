@@ -1,4 +1,5 @@
 const deleteImage = require('../helper/deleteImage');
+const { redisClient } = require('../helper/redisConfig');
 const Offer = require('../models/OfferModel');
 const Product = require('../models/ProductModel'); // IMPORTANT
 
@@ -18,7 +19,9 @@ exports.createOffer = async (req, res) => {
 // Get all offers
 exports.getOffers = async (req, res) => {
   try {
-    const offers = await Offer.find({});
+
+
+    const offers = await Offer.find();
     res.json(offers);
   } catch (err) {
     res.status(500).json({ error: "Error fetching offers" });
@@ -69,3 +72,75 @@ exports.deleteOffer = async (req, res) => {
     res.status(500).json({ error: "Error deleting offer" });
   }
 };
+
+
+exports.getOffersAll = async (req, res) => {
+  try {
+const casheKey = "alloffers"
+
+const casheOffer = await redisClient.get(casheKey);
+if(casheOffer){
+return  res.json(JSON.parse(casheOffer));
+}
+    const offers = await Offer.find();
+    
+    await redisClient.set(casheKey,JSON.stringify(offers),{
+    EX:300
+    })
+
+    res.json(offers);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching offers" });
+  }
+};
+
+
+exports.ToggleShowOnScreen= async(req,res)=>{
+  try {
+    const {id} = req.params;
+  const offer = await Offer.findById(id)
+
+  offer.showonpage = !offer.showonpage;
+   await offer.save();
+
+   return res.json({
+    success:true,
+    message:"status Updated"
+   })
+
+
+  } catch (error) {
+    
+   return res.json({
+    success:false,
+    message:error
+   })
+
+
+  }
+}
+
+exports.getFroentOffers = async(req,res)=>{
+  try {
+    try {
+const casheKey = "alloffersStatus"
+
+const casheOffer = await redisClient.get(casheKey);
+if(casheOffer){
+return  res.json(JSON.parse(casheOffer));
+}
+    const offers = await Offer.find({showonpage:true});
+    
+    await redisClient.set(casheKey,JSON.stringify(offers),{
+    EX:300
+    })
+
+    res.json(offers);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching offers" });
+  }
+  } catch (error) {
+    
+  }
+}
+

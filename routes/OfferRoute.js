@@ -4,16 +4,24 @@ const {
   getOffers, 
   getOfferBySlug, 
   deleteOffer ,
-  getOfferByid
+  getOfferByid,
+  getOffersAll,
+  ToggleShowOnScreen,
+  getFroentOffers
 } = require("../controllers/OfferController");
 const upload = require("../helper/saveImage");
 
 const router = express.Router();
 
-router.post("/",upload.single("image"), createOffer);               // Create offer
-router.get("/", getOffers);                  // Get all offers
-router.get("/byid/:slug", getOfferByid);        // Get single offer
-router.get("/:slug", getOfferBySlug);        // Get single offer
-router.delete("/:offerId", deleteOffer);     // Delete offer
+router.post("/",upload.single("image"), createOffer);              
+router.get("/", getOffers);                  
+
+router.get("/all",getOffersAll)
+router.put("/toggle/:id",ToggleShowOnScreen)
+router.get("/forshow",getFroentOffers)
+
+router.get("/byid/:slug", getOfferByid);        
+router.get("/:slug", getOfferBySlug);        
+router.delete("/:offerId", deleteOffer);    
 
 module.exports = router;

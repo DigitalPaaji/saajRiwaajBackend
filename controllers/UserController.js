@@ -6,6 +6,9 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Cart = require("../models/CartModel");
 const { OAuth2Client } = require("google-auth-library");
+const { sendOtp } = require("../helper/sendOtp");
+const { redisClient } = require("../helper/redisConfig");
+const CartModel = require("../models/CartModel");
 
 const USER_JWT_SECRET = process.env.USER_JWT_SECRET;
 const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET;
@@ -46,57 +49,161 @@ const signup = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
-// ---------------------- LOGIN ----------------------
-// loginUser
+
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email } = req.body;
   try {
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ message: "Invalid Email or Password" });
+    const otp = Math.floor(100000 + Math.random() * 900000);
+     
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid Credentials" });
 
-    // Only allow those who have "user" role
-    if (!user.role.includes("user")) {
-      return res.status(403).json({ message: "Access denied: Users only" });
+ const key = `otp_limit:${email}`;
+
+    // Get current count
+    const count = await redisClient.get(key);
+
+  if (count && Number(count) >= 3) {
+      return res.status(429).json({
+        success: false,
+        message: "Too many OTP requests. Try again after 5 minutes."
+      });
     }
 
-    const token = jwt.sign(
+await sendOtp(email,otp)
+
+      await redisClient.set(
+      `otp:${email}`,   
+      otp.toString(),   
+      {
+        EX: 300     
+      }
+    );
+
+ if (!count) {
+      await redisClient.set(key, 1, { EX: 300 }); 
+    } else {
+      await redisClient.incr(key); 
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully"
+    });
+
+  } catch (error) {
+      return res.status(500).json({
+      success: false,
+      message: "Something went wrong"
+    });
+  }
+ 
+};
+
+
+const verifyOtp= async(req,res)=>{
+  try {
+      const { email, otp ,wishlist,cart } = req.body;
+
+         const storedOtp = await redisClient.get(`otp:${email}`);
+
+ if (!storedOtp) {
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    if (storedOtp !== String(otp)) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+ await redisClient.del(`otp:${email}`);
+
+let user = await User.findOne({email});
+
+if(!user){
+ user = await User.create({
+email,wishlist
+  })
+
+
+}else{
+     if ( wishlist && wishlist.length > 0) {
+        const existing = user.wishlist.map(id => id.toString());
+
+        wishlist.forEach(elm => {
+          if (!existing.includes(elm.toString())) {
+            user.wishlist.push(elm);
+          }
+        });
+      }
+
+
+
+await  user.save()
+}
+
+  if (cart.length > 0) {
+      await CartModel.deleteMany({ user: user._id });
+
+      const cartData = cart.map(item => ({
+        ...item,
+        user: user._id
+      }));
+
+      await CartModel.insertMany(cartData); 
+    }
+
+
+
+ const token = jwt.sign(
       { id: user._id, roles: user.role },
       USER_JWT_SECRET,
-      { expiresIn: "1d" }
-    ); 
+      { expiresIn: "30d" }
+    );
 
     res.status(200).cookie("userToken", token, {
   path:'/',
         httpOnly:true,
-        expires: new Date(Date.now()+ 1000 *60 *60 * 24 * 70),
+        expires: new Date(Date.now()+ 1000 *60 *60 * 24 * 30),
         sameSite:'none',
       secure:true,
 })
-      .json({
-        message: "Login Successful",
-        token,
-        user: { name: user.name, email: user.email, role: user.role },
-      });
-  } catch (err) {
-    console.error("User Login Failed:", err);
-    res.status(500).json({ message: "Server Error" });
-  }
-};
 
-// loginAdmin
+
+
+return res.status(200).json({
+      success: true,
+      message: "Login successful",
+  
+
+   
+    });
+
+
+  } catch (error) {
+        console.error(error);
+
+     return res.status(500).json({
+      message: "Server error",
+    });
+  }
+}
+
+
+
+
+
 const loginAdmin = async (req, res) => {
   const { email, password } = req.body;
   try {
+ 
     const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ message: "Invalid Email or Password" });
+   
+    if (!user) return res.status(400).json({ message: "Invalid Email or Password" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
+ 
+
+    const isMatch = await bcrypt.compare(  String(password), String(user.password));
+  
+
     if (!isMatch)
       return res.status(400).json({ message: "Invalid Credentials" });
     if (!user.role.includes("admin")) {
@@ -122,7 +229,7 @@ const loginAdmin = async (req, res) => {
         user: { name: user.name, email: user.email, role: user.role },
       });
   } catch (err) {
-    console.error("Admin Login Failed:", err);
+    console.error("Admin Login Failed:", err.message);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -137,7 +244,7 @@ const logoutUser = (req, res) => {
       secure:true,
     
   });
-  return res.status(200).json({ message: "Logged out" });
+  return res.status(200).json({ message: "Logged out",success:true });
 };
 
 const logoutAdmin = (req, res) => {
@@ -273,9 +380,8 @@ const getUser = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find()
-      .select("-password") // password field hide karne ke liye
-      .populate("cart.product")
-      .populate("wishlist");
+      .select("-password") 
+    
 
     res.status(200).json({ users });
   } catch (err) {
@@ -336,6 +442,45 @@ const addToCart = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+    const { userid } = req.params;
+
+   
+    if (!userid) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    // 🔍 Check if user exists
+    const user = await User.findById(userid);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+ 
+    await User.findByIdAndDelete(userid);
+
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 
 
 
@@ -350,11 +495,20 @@ const addToWishlist = async (req, res) => {
       user.wishlist.push(productId);
       await user.save();
     }
-    await user.populate("wishlist");
+  
+
+  const cacheKey = `user:${userId}`;
+   await redisClient.set(
+      cacheKey,
+      JSON.stringify(user),
+      {
+        EX: 300,
+      }
+    );
 
     res
       .status(200)
-      .json({ message: "Added to wishlist", wishlist: user.wishlist });
+      .json({ message: "Added to wishlist",success:true});
   } catch (err) {
     console.error("Add to wishlist error:", err);
     res.status(500).json({ message: "Server error" });
@@ -372,10 +526,21 @@ const removeFromWishlist = async (req, res) => {
       (item) => item.toString() !== productId
     );
     await user.save();
-    await user.populate("wishlist");
+  
+
+  const cacheKey = `user:${userId}`;
+   await redisClient.set(
+      cacheKey,
+      JSON.stringify(user),
+      {
+        EX: 300,
+      }
+    );
+
     res.status(200).json({
+      success:true,
       message: "Removed from wishlist",
-      wishlist: user.wishlist,
+   
     });
   } catch (err) {
     console.error("Remove from wishlist error:", err);
@@ -507,7 +672,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const loginByGoogle= async(req,res)=>{
 try {
-  const { token2 } = req.body;
+  const { token2 ,wishlist,cart} = req.body;
  const ticket = await client.verifyIdToken({
       idToken: token2,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -521,10 +686,34 @@ const payload = ticket.getPayload();
       user = await User.create({
         name,
         email,
+        wishlist,
       
       });
-    }
+    }else{
+     if ( wishlist && wishlist.length > 0) {
+        const existing = user.wishlist.map(id => id.toString());
 
+        wishlist.forEach(elm => {
+          if (!existing.includes(elm.toString())) {
+            user.wishlist.push(elm);
+          }
+        });
+      }
+
+
+
+await  user.save()
+}
+  if (cart.length > 0) {
+      await CartModel.deleteMany({ user: user._id });
+
+      const cartData = cart.map(item => ({
+        ...item,
+        user: user._id
+      }));
+
+      await CartModel.insertMany(cartData); 
+    }
  const token = jwt.sign(
       { id: user._id, roles: user.role },
       USER_JWT_SECRET,
@@ -539,9 +728,8 @@ const payload = ticket.getPayload();
       secure:true,
 })
       .json({
-        message: "Login Successful",
-       
-        user: { name: user.name, email: user.email, role: user.role },
+        success: true,
+      message: "Login successful",
       });
 } catch (error) {
   console.error("User Login Failed:", error);
@@ -549,6 +737,18 @@ const payload = ticket.getPayload();
 }
 }
 
+
+const getNewUserDetails= async(req,res)=>{
+  try {
+    const user = req.user ;
+     res.status(200).json({ user,success:true });
+  } catch (error) {
+    console.log(error)
+    return  res.status(500).json({
+      success:false,message:error.message
+    })
+  }
+}
 
 module.exports = {
   signup,
@@ -570,4 +770,7 @@ module.exports = {
   logoutUser,
   updateUserProfile,
   loginByGoogle,
+  getNewUserDetails,
+  verifyOtp,
+  deleteUser,
 };

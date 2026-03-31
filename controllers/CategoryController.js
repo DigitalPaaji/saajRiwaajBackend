@@ -1,6 +1,7 @@
 const { redisClient } = require('../helper/redisConfig');
 const Category = require('../models/CategoryModel');
 const ProductModel = require('../models/ProductModel');
+const SubCategory = require('../models/SubCategoryModel');
 
 exports.createCategory = async (req, res) => {
     try {
@@ -95,3 +96,47 @@ exports.updateCategory = async(req,res)=>{
     });
   }
 }
+
+
+
+exports.getCat_sub = async (req, res) => {
+  try {
+    const categories = await Category.find();
+    const subcats = await SubCategory.find();
+
+    // create map for categories
+    const map = {};
+
+    // ✅ Step 1: add all categories with empty subCategories
+    categories.forEach((cat) => {
+      map[cat._id] = {
+        category: cat,
+        subCategories: [],
+      };
+    });
+
+    // ✅ Step 2: attach subcategories
+    subcats.forEach((sub) => {
+      const catId = sub.category.toString();
+
+      if (map[catId]) {
+        map[catId].subCategories.push(sub);
+      }
+    });
+
+    // ✅ final result
+    const result = Object.values(map);
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+

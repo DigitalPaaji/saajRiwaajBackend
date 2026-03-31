@@ -1,22 +1,14 @@
 const mongoose = require("mongoose");
 
-// 🛒 Subschema for each cart item
-const cartItemSchema = new mongoose.Schema(
-  {
-    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-    color: { type: String, default: null },
-    quantity: { type: Number, default: 1 },
-   
-  },
-  { _id: true } 
-);
- 
+
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String },
   email: { type: String, required: true, unique: true },
-  password: { type: String },
-  
+ 
+  password:{
+    type:String
+  },
   role: {
     type: [String],
     enum: ["user", "admin"],
@@ -33,8 +25,8 @@ const userSchema = new mongoose.Schema({
     addressLine: { type: String, default: "" },
   },
 
-  // ✅ Use subschema here
-  cart: [cartItemSchema],
+  
+
 
   wishlist: [
     { 
@@ -43,10 +35,9 @@ const userSchema = new mongoose.Schema({
     },
   ],
 
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
+
 });
 
-// Export the model
+
 const User = mongoose.model("User", userSchema);
 module.exports = User;

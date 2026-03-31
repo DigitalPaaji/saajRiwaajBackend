@@ -2,7 +2,8 @@ const { default: mongoose } = require('mongoose');
 const deleteImage = require('../helper/deleteImage');
 const OfferModel = require('../models/OfferModel')
 const Product = require('../models/ProductModel')
-const SubCategoryModel = require('../models/SubCategoryModel')
+const SubCategoryModel = require('../models/SubCategoryModel');
+const { redisClient } = require('../helper/redisConfig');
 
 exports.createProduct = async (req,res)=>{
     try{
@@ -43,6 +44,12 @@ thumbnail = item.filename
   const allproductData = {...req.body,description,tags,colorVariants,isFeatured,isNewArrival,images:allImges,barcode,thumbnail}
         const newProduct = new Product(allproductData)
         const saved = await newProduct.save()
+ if(req.body.offer){
+const offer=  await OfferModel.findById(req.body.offer)
+offer.products.push(saved._id);
+await offer.save()
+ }    
+
         res.status(200).json({saved,fullbarcode})
     }catch(err){
         res.status(500).json({error:err.message})
@@ -187,7 +194,8 @@ exports.updateProductById = async (req, res) => {
     };
 
     req.body.description   = parse(req.body.description, {});
-    req.body.offer         = parse(req.body.offer, []);
+  
+    req.body.offer         = parse(req.body.offer);
     req.body.tags          = parse(req.body.tags, []);
     req.body.colorVariants = parse(req.body.colorVariants, []);
     req.body.hidethings    = parse(req.body.hidethings, []);
@@ -255,11 +263,45 @@ exports.updateProductById = async (req, res) => {
     }
 
 
+const oldProduct = await Product.findById(req.params.id)
+   if(req.body.offer != oldProduct.offer){
+const newOffer=  await OfferModel.findById(req.body.offer)
+
+if (newOffer && !newOffer.products.includes(oldProduct._id)) {
+    newOffer.products.push(oldProduct._id);
+    await newOffer.save();
+  }
+
+if (oldProduct.offer) {
+    const removeOffer = await OfferModel.findById(oldProduct.offer);
+
+    if (removeOffer) {
+      removeOffer.products = removeOffer.products.filter(
+        (item) => item.toString() !== oldProduct._id.toString()
+      );
+      await removeOffer.save();
+    }
+  }
+
+
+ } 
+
+
+
+
+
+
+
+
+
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
     );
+
+ 
+
 
     res.status(200).json(updated);
 
@@ -274,11 +316,22 @@ exports.updateProductById = async (req, res) => {
 
 exports.getFeaturedProducts = async (req, res) => {
   try {
-    const featuredProducts = await Product.find({ isFeatured: true })
-      .populate('category', 'name')
-      .populate('tags', 'name')
-      .populate('subcategory', 'name')
-      .sort({ createdAt: -1 });
+   const featuredProducts = await Product.aggregate([
+  { $match: { isFeatured: true } },
+
+  { $sample: { size: 8 } },
+
+  {
+    $project: {
+      images: 1,
+      name: 1,
+      isFeatured: 1,
+      price: 1,
+      finalPrice: 1,
+      colorVariants:1
+    }
+  }
+]);
       res.status(200).json(featuredProducts);
   } catch (err) {
     console.error("Error fetching featured products:", err);
@@ -363,6 +416,18 @@ exports.getAllGraphData=async(req,res)=>{
 exports.getRandomProduct = async (req, res) => {
   try {
     const categoryId = req.params.categoryId;
+        const cacheKey = `random_products:${categoryId}`;
+  const cachedData = await redisClient.get(cacheKey);
+
+  if (cachedData) {
+      return res.status(200).json({
+        success: true,
+        source: "cache",
+        count: JSON.parse(cachedData).length,
+        products: JSON.parse(cachedData),
+      });
+    }
+
 
     const categoryObjectId = new mongoose.Types.ObjectId(categoryId);
 
@@ -387,9 +452,18 @@ exports.getRandomProduct = async (req, res) => {
           discount: 1,
           images: 1,
           description: 1,
+          colorVariants:1,
         }
       }
     ]);
+
+        await redisClient.set(
+      cacheKey,
+      JSON.stringify(products),
+      {
+        EX: 300, 
+      }
+    );
 
     res.status(200).json({
       success: true,
@@ -400,6 +474,7 @@ exports.getRandomProduct = async (req, res) => {
   } catch (error) {
     console.error("Random Product Error:", error);
 
+    
     res.status(500).json({
       success: false,
       message: "Failed to fetch random products",

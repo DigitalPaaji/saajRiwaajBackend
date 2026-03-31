@@ -44,12 +44,15 @@ const getPhonePeToken = async () => {
  const placeOrder = async (req, res) => {
   try {
     const { items, shippingAddress, paymentMethod, amount } = req.body;
-    const userId = req.user._id;
+
+
+const fullshiping= {...shippingAddress,...shippingAddress.address}
+    const userId = req.user._id;  
 
     const productOrder = await Order.create({
       userId, 
       items,
-      shippingAddress,
+      shippingAddress:fullshiping,
       paymentMethod,
       amount,
     
@@ -57,7 +60,11 @@ const getPhonePeToken = async () => {
       orderStatus: "placed",
     });
 
-    await User.findByIdAndUpdate(userId, { $set: { cart: [] } });
+
+    await User.findByIdAndUpdate(userId, { $set: {address:shippingAddress.address,name:shippingAddress.name,phone:shippingAddress.phone  } });
+  
+
+
 
     return res.json({ productOrder, userId });
 
@@ -71,8 +78,11 @@ const getPhonePeToken = async () => {
 
 const phonepePay = async (req, res) => {
   try {
-    const { orderId, amount, userId } = req.body;
+    const { orderId, amount } = req.body;
     const AUTH_TOKEN = await getPhonePeToken()
+
+
+
 
 const payData ={
  merchantOrderId: orderId,   
@@ -122,6 +132,9 @@ const phonepeStatus = async (req, res) => {
   try {
     const { orderId} = req.params;
     const {buytype} = req.body
+
+
+
   const userId = req.user._id;
   
 
@@ -133,7 +146,7 @@ const phonepeStatus = async (req, res) => {
 
 
         const AUTH_TOKEN = await getPhonePeToken();
-   const statusResponse = await axios.get(
+       const statusResponse = await axios.get(
       `${process.env.Sandbox}/checkout/v2/order/${orderId}/status?details=true`,
       {
         headers: {
@@ -147,7 +160,7 @@ const phonepeStatus = async (req, res) => {
 if(phonePeData.state=="COMPLETED"){
   order.paymentStatus = "paid";
   await order.save();
-  await Cart.deleteMany({ user: userId,buytype:buytype });
+  await Cart.deleteMany({ user: userId});
   await sendOrderMail(order)
   return res.json({ success: true, message: "Order created" });
   
@@ -369,6 +382,46 @@ const hidethings= async(req,res)=>{
 }
 
 
+const deleteOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 🔴 Validation
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Order ID is required",
+      });
+    }
+
+    // 🔍 Check if order exists
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // 🗑 Delete order
+    await order.deleteOne();
+
+    // 🟢 Response
+    res.status(200).json({
+      success: true,
+      message: "Order deleted successfully",
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 
 module.exports = {
   placeOrder,  
@@ -382,4 +435,5 @@ module.exports = {
   phonepeStatus,
   phonePaycancel,
   hidethings,
+  deleteOrder,
 };

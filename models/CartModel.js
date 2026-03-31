@@ -28,11 +28,7 @@ color:{
     type:String,
     default:null
 },
-buytype:{
-type:String,
-enum:["cart","buy"],
-default:"cart",
-}
+
 
 },{timestamps:true});
 

@@ -2,7 +2,7 @@ const router = require("express").Router();
 const orderController = require("../controllers/OrderController");
 const userAuth = require("../middleware/userAuth");
 const adminAuth = require("../middleware/adminAuth");
-
+ 
 // user routes 
 router.post("/", userAuth, orderController.placeOrder); 
 router.post("/phonepe/pay", userAuth, orderController.phonepePay);
@@ -17,6 +17,6 @@ router.put("/tracking/:id",adminAuth,orderController.updateTracking)
 router.put("/hide-add/:id",adminAuth,orderController.hidethings)
 
 router.put("/:id", adminAuth, orderController.updateOrderStatus);
-
+router.delete("/delete/:id",adminAuth,orderController.deleteOrder)
 module.exports = router;
  

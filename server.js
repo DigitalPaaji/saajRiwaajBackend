@@ -16,6 +16,8 @@ const offerRoutes = require('./routes/OfferRoute')
 const cartRoutes = require('./routes/CartRoute')
 const pagesRoutes = require('./routes/pagesRoutes')
 const NewsletterRoutes = require('./routes/newsLetterRoute')
+const wishlistRoutes = require('./routes/wishlistRoute')
+const reviewRoutes = require('./routes/reviewRoute')
 
 
 
@@ -74,10 +76,11 @@ app.use('/coupon',couponRoutes)
 app.use('/order',orderRoutes);
 app.use("/api", mailRoutes); 
 app.use('/offer', offerRoutes);
-app.use("/cart",cartRoutes)
+app.use("/cart",cartRoutes) 
 app.use("/pages",pagesRoutes)
-app.use("/newsletter",NewsletterRoutes)
-
+app.use("/newsletter",NewsletterRoutes) 
+app.use("/wishlist",wishlistRoutes)
+app.use("/review",reviewRoutes)
 
 
 

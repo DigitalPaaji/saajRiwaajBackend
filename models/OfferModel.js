@@ -26,7 +26,11 @@ const OfferSchema = new mongoose.Schema({
     {type:mongoose.Schema.Types.ObjectId,
 ref:"Product"
  }
-  ]
+  ],
+  showonpage:{
+    type:Boolean,
+    default:false
+  }
 });
 
 module.exports = mongoose.model("Offer", OfferSchema);

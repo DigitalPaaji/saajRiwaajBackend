@@ -19,9 +19,13 @@ router.put('/reset-password/:token', User.resetPassword);
 router.post('/signup',User.signup)
 // router.post('/login',User.login)
 router.post('/loginUser',User.loginUser)
+router.post("/verifyotp",User.verifyOtp)
+router.delete("/delete/:userid",auth,User.deleteUser)
+
+
 router.post('/loginUser/google',User.loginByGoogle)
 router.post('/loginAdmin',User.loginAdmin)
-router.post('/userlogout',User.logoutUser)
+router.get('/userlogout',User.logoutUser)
 router.post('/adminlogout',User.logoutAdmin)
 router.post('/cart', auth, User.addToCart);
 router.post('/wishlist', auth, User.addToWishlist);
@@ -30,6 +34,6 @@ router.post('/forgot-password', User.forgotPassword);
 
 router.delete('/wishlist/:productId', auth, User.removeFromWishlist);
 router.delete('/cart/:productId', auth, User.removeFromCart);
-
+router.get("/getuser",auth,User.getNewUserDetails)
 
 module.exports = router;
