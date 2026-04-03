@@ -1,5 +1,5 @@
 const  deleteImage  = require('../helper/deleteImage');
-const  { redisClient,connectRedis } = require('../helper/redisConfig');
+const  { redisClient } = require('../helper/redisConfig');
 const Banner = require('../models/BannerModel');
 
 
@@ -7,18 +7,18 @@ const Banner = require('../models/BannerModel');
 exports.getAllBanners = async (req, res) => {
   try {
 const bannerKey= "banners"
-  const cachedData = await redisClient.get(bannerKey);
-if(cachedData){
-     console.log("✅ Serving from cache");
-      return res.status(200).json(JSON.parse(cachedData)); 
-}
+//   const cachedData = await redisClient.get(bannerKey);
+// if(cachedData){
+//      console.log("✅ Serving from cache");
+//       return res.status(200).json(JSON.parse(cachedData)); 
+// }
 
 
     const banners = await Banner.find().sort({ order: 1 });
 
-   await redisClient.set(bannerKey, JSON.stringify(banners), {
-      EX: 60 * 5, 
-    });
+  //  await redisClient.set(bannerKey, JSON.stringify(banners), {
+  //     EX: 60 * 5, 
+  //   });
     res.status(200).json(banners);
   } catch (err) {
     res.status(500).json({ error: err.message });

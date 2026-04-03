@@ -3,7 +3,7 @@ const path = require("path");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/");
+    cb(null, "uploads/category");
   },
   filename: function (req, file, cb) {
     const uniqueName =
@@ -14,12 +14,12 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage,
+const catupload = multer({ storage,
    limits: {
-    fileSize: 20 * 1024 * 1024, 
+    fileSize: 1024 * 1024, 
   }, });
 
-module.exports = upload;
+module.exports = catupload;
 
 
 

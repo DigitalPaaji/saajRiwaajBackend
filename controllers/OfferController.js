@@ -78,15 +78,15 @@ exports.getOffersAll = async (req, res) => {
   try {
 const casheKey = "alloffers"
 
-const casheOffer = await redisClient.get(casheKey);
-if(casheOffer){
-return  res.json(JSON.parse(casheOffer));
-}
+// const casheOffer = await redisClient.get(casheKey);
+// if(casheOffer){
+// return  res.json(JSON.parse(casheOffer));
+// }
     const offers = await Offer.find();
     
-    await redisClient.set(casheKey,JSON.stringify(offers),{
-    EX:300
-    })
+    // await redisClient.set(casheKey,JSON.stringify(offers),{
+    // EX:300
+    // })
 
     res.json(offers);
   } catch (err) {
@@ -125,15 +125,15 @@ exports.getFroentOffers = async(req,res)=>{
     try {
 const casheKey = "alloffersStatus"
 
-const casheOffer = await redisClient.get(casheKey);
-if(casheOffer){
-return  res.json(JSON.parse(casheOffer));
-}
+// const casheOffer = await redisClient.get(casheKey);
+// if(casheOffer){
+// return  res.json(JSON.parse(casheOffer));
+// }
     const offers = await Offer.find({showonpage:true});
     
-    await redisClient.set(casheKey,JSON.stringify(offers),{
-    EX:300
-    })
+    // await redisClient.set(casheKey,JSON.stringify(offers),{
+    // EX:300
+    // })
 
     res.json(offers);
   } catch (err) {

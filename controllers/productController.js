@@ -137,7 +137,7 @@ const filter = {
       .populate("subcategory", "name")
       .sort({ createdAt: -1 }) 
       .skip(skip)
-      .limit(limit).select(" name category subcategory price finalPrice discount thumbnail  images description ");
+      .limit(limit).select(" name category subcategory price finalPrice discount thumbnail  images description  colorVariants");
 
       const total = await Product.countDocuments(filter);
 
@@ -416,17 +416,17 @@ exports.getAllGraphData=async(req,res)=>{
 exports.getRandomProduct = async (req, res) => {
   try {
     const categoryId = req.params.categoryId;
-        const cacheKey = `random_products:${categoryId}`;
-  const cachedData = await redisClient.get(cacheKey);
+        // const cacheKey = `random_products:${categoryId}`;
+  // const cachedData = await redisClient.get(cacheKey);
 
-  if (cachedData) {
-      return res.status(200).json({
-        success: true,
-        source: "cache",
-        count: JSON.parse(cachedData).length,
-        products: JSON.parse(cachedData),
-      });
-    }
+  // if (cachedData) {
+  //     return res.status(200).json({
+  //       success: true,
+  //       source: "cache",
+  //       count: JSON.parse(cachedData).length,
+  //       products: JSON.parse(cachedData),
+  //     });
+  //   }
 
 
     const categoryObjectId = new mongoose.Types.ObjectId(categoryId);
@@ -457,13 +457,13 @@ exports.getRandomProduct = async (req, res) => {
       }
     ]);
 
-        await redisClient.set(
-      cacheKey,
-      JSON.stringify(products),
-      {
-        EX: 300, 
-      }
-    );
+    //     await redisClient.set(
+    //   cacheKey,
+    //   JSON.stringify(products),
+    //   {
+    //     EX: 300, 
+    //   }
+    // );
 
     res.status(200).json({
       success: true,

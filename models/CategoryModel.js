@@ -8,6 +8,9 @@ const categorySchema = new mongoose.Schema({
     unique: true,
     trim: true,
     lowercase: true
+  },
+  image:{
+     type: String,
   }
 });
 

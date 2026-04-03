@@ -1,3 +1,4 @@
+const deleteCatImage = require('../helper/deleteCatImg');
 const { redisClient } = require('../helper/redisConfig');
 const Category = require('../models/CategoryModel');
 const ProductModel = require('../models/ProductModel');
@@ -5,9 +6,14 @@ const SubCategory = require('../models/SubCategoryModel');
 
 exports.createCategory = async (req, res) => {
     try {
-        const category = await Category.create({ name: req.body.name });        
-        res.status(201).json(category);
+
+      const image = req.file;
+
+     
+        const category = await Category.create({ name: req.body.name,image:image.path });        
+        res.status(201).json({success:true,category});
     } catch (err) {
+      
         res.status(400).json({ error: err.message });
     }
 };
@@ -15,18 +21,18 @@ exports.createCategory = async (req, res) => {
 exports.getCategories = async (req, res) => {
   const cashkey = "category";
 
-const cashedData= await redisClient.get(cashkey)
-if(cashedData){
-    return   res.status(200).json({cats:JSON.parse(cashedData)});
-}
+// const cashedData= await redisClient.get(cashkey)
+// if(cashedData){
+//     return   res.status(200).json({cats:JSON.parse(cashedData)});
+// }
 
      
     const cats = await Category.find();
     res.setHeader("Content-Type", "application/json");
 
-    await redisClient.set(cashkey,JSON.stringify(cats),{
-      EX: 60 * 5,
-    })
+    // await redisClient.set(cashkey,JSON.stringify(cats),{
+    //   EX: 60 * 5,
+    // })
 
   return   res.status(200).json({cats});
 };
@@ -58,7 +64,11 @@ exports.deleteCategory = async (req, res) => {
       );
     }
 
-    // Delete the category
+    if(category.image){
+
+
+    await  deleteCatImage(category.image)
+    }
     await Category.findByIdAndDelete(req.params.id);
 
     res.json({ message: "Category and its products deleted successfully" });
@@ -73,7 +83,7 @@ exports.updateCategory = async(req,res)=>{
     const {id} = req.params;
     const {name} = req.body;
 
-    const category = await Category.findByIdAndUpdate(id,{name});
+    const category = await Category.findById(id);
 
 
     if (!category) {
@@ -82,6 +92,18 @@ exports.updateCategory = async(req,res)=>{
         message: "Category not found",
       });
     }
+
+    category.name = name;
+
+if(req.file && req.file.path){
+  if(category.image){
+
+    await deleteCatImage(category.image)
+  }
+  category.image= req.file.path;
+}
+
+await category.save()
        return res.status(200).json({
       success: true,
       message: "Category updated successfully",
