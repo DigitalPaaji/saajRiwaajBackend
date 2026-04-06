@@ -20,9 +20,10 @@ router.get('/category/:categoryId', productController.getProductsByCategory);
 router.get('/featured', productController.getFeaturedProducts);
 router.get('/offer/:offerId', productController.getProductsByOffer);
 router.get('/search/:text', productController.searchProduct);
-router.get("/random/:categoryId",productController.getRandomProduct)
-router.get("/random/:categoryId",productController.getRandomProduct)
+// router.get("/random/:categoryId",productController.getRandomProduct)
 
+router.get("/getrandomproduct",productController.getAllRandomProduct)
+router.get("/random/:categoryId",productController.getRandomProduct)
 
 
 

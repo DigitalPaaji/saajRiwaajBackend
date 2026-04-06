@@ -86,11 +86,10 @@ const phonepePay = async (req, res) => {
 
 const payData ={
  merchantOrderId: orderId,   
-      amount: amount * 100,                 
-    
+      amount: parseInt(amount * 100),
 
       paymentFlow: {
-        type: "PG_CHECKOUT", // always required
+        type: "PG_CHECKOUT", 
         merchantUrls: {
           redirectUrl: `${process.env.FRONTEND_URL}/orders`,
         },
@@ -112,12 +111,6 @@ const response = await axios.post(`${process.env.Sandbox}/checkout/v2/pay`,payDa
       orderId,
     });
 
-
-
-
-
-
-    
   } catch (error) {
     console.log( error.message);
     return res.status(500).json({ error: error.message });
@@ -131,11 +124,9 @@ const response = await axios.post(`${process.env.Sandbox}/checkout/v2/pay`,payDa
 const phonepeStatus = async (req, res) => {
   try {
     const { orderId} = req.params;
-    const {buytype} = req.body
+    const {buytype} = req.query
 
-
-
-  const userId = req.user._id;
+    const userId = req.user._id;
   
 
     const order = await Order.findById(orderId).populate("userId");
@@ -160,7 +151,12 @@ const phonepeStatus = async (req, res) => {
 if(phonePeData.state=="COMPLETED"){
   order.paymentStatus = "paid";
   await order.save();
-  await Cart.deleteMany({ user: userId});
+  if(buytype =="buy"){
+
+  }else{
+
+    await Cart.deleteMany({ user: userId});
+  }
   await sendOrderMail(order)
   return res.json({ success: true, message: "Order created" });
   
@@ -216,7 +212,10 @@ const phonePaycancel= async(req,res)=>{
 
 const getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.user._id }).sort({ createdAt: -1 }).populate("items");
+    const orders = await Order.find({ userId: req.user._id }).sort({ createdAt: -1 }).populate({
+    path: "items.product",
+    model: "Product"
+  });
     res.status(200).json({ orders });
   } catch (err) {
     res.status(500).json({ message: "Error fetching orders" });

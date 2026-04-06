@@ -482,3 +482,46 @@ exports.getRandomProduct = async (req, res) => {
   }
 };
 
+
+exports.getAllRandomProduct= async(req,res)=>{
+    try {
+    
+
+    const products = await Product.aggregate([{
+        $sample: { size: 16 }
+      },
+
+      {
+        $project: {
+          name: 1,
+          category: 1,
+          subcategory: 1,
+          price: 1,
+          finalPrice: 1,
+          discount: 1,
+          images: 1,
+          description: 1,
+          colorVariants:1,
+        }
+      }
+    ]);
+
+   
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      products,
+    });
+
+  } catch (error) {
+    console.error("Random Product Error:", error);
+
+    
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch random products",
+    });
+  }
+}
+

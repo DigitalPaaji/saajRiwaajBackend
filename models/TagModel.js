@@ -1,4 +1,3 @@
-// models/Tag.js
 const mongoose = require('mongoose');
 
 const tagSchema = new mongoose.Schema({
@@ -8,6 +7,14 @@ const tagSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     lowercase: true
+  },
+  image:{
+    type:String,
+
+  },
+  status:{
+    type:Boolean,
+    default:false
   }
 });
 
