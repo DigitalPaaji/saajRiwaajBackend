@@ -67,9 +67,11 @@ rating:{
 reviewCount:{
   type:Number,
   default:0
+},
+outofstock:{
+  type:Boolean,
+default:false
 }
-
-
 });
 
 productSchema.post("findOneAndDelete", async function (doc) {
