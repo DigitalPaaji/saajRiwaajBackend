@@ -59,6 +59,17 @@ const productSchema = new mongoose.Schema({
     },
   ],
   hidethings:[String],
+
+rating:{
+  type:Number,
+  default:0
+},
+reviewCount:{
+  type:Number,
+  default:0
+}
+
+
 });
 
 productSchema.post("findOneAndDelete", async function (doc) {
@@ -73,7 +84,7 @@ productSchema.post("findOneAndDelete", async function (doc) {
       },
     }
   );
-  console.log(` Product ${doc._id} removed from all carts and wishlists.`);
+
 });
 
 module.exports = mongoose.model("Product", productSchema);

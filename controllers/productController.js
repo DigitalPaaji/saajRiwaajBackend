@@ -137,8 +137,8 @@ const filter = {
       .populate("subcategory", "name")
       .sort({ createdAt: -1 }) 
       .skip(skip)
-      .limit(limit).select(" name category subcategory price finalPrice discount thumbnail  images description  colorVariants");
-
+      .limit(limit).select(" name rating reviewCount category subcategory price finalPrice discount thumbnail  images description  colorVariants");
+ 
       const total = await Product.countDocuments(filter);
 
   
@@ -328,7 +328,9 @@ exports.getFeaturedProducts = async (req, res) => {
       isFeatured: 1,
       price: 1,
       finalPrice: 1,
-      colorVariants:1
+      colorVariants:1,
+       rating:1,
+          reviewCount:1
     }
   }
 ]);
@@ -453,6 +455,8 @@ exports.getRandomProduct = async (req, res) => {
           images: 1,
           description: 1,
           colorVariants:1,
+           rating:1,
+          reviewCount:1
         }
       }
     ]);
@@ -502,6 +506,8 @@ exports.getAllRandomProduct= async(req,res)=>{
           images: 1,
           description: 1,
           colorVariants:1,
+          rating:1,
+          reviewCount:1
         }
       }
     ]);

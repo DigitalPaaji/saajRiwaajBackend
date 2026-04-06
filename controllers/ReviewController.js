@@ -1,18 +1,31 @@
+const Product = require("../models/ProductModel");
 const Review = require("../models/ratingModel")
 
 
 
-exports.createReview= async (req,res)=>{
-    try {
-        const {name,email,title,review,rating,product} = req.body
-        
-  if (!name || !email || !review || !rating || !product) {
+exports.createReview = async (req, res) => {
+  try {
+    const { name, email, title, review, rating, product } = req.body;
+
+
+    if (!name || !email || !review || !rating || !product) {
       return res.status(400).json({
         success: false,
         message: "All required fields must be filled",
       });
     }
-        const newReview = await Review.create({
+ 
+
+    const getProduct = await Product.findById(product);
+    if (!getProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    // ✅ Create Review
+    const newReview = await Review.create({
       name,
       email,
       title,
@@ -20,26 +33,36 @@ exports.createReview= async (req,res)=>{
       rating,
       product,
     });
-        
 
+    // ✅ Calculate new rating
+    const oldRating = getProduct.rating || 0;
+    const oldReviewCount = getProduct.reviewCount || 0;
 
-         res.status(201).json({
+    const totalRating = oldRating * oldReviewCount + Number(rating);
+    const newReviewCount = oldReviewCount + 1;
+    const newRating = totalRating / newReviewCount;
+
+   
+    getProduct.rating = newRating;
+    getProduct.reviewCount = newReviewCount;
+
+    await getProduct.save();
+
+    // ✅ Response
+    res.status(201).json({
       success: true,
       message: "Review created successfully",
       data: newReview,
     });
 
-
-
-
-    } catch (error) {
-         res.status(500).json({
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
       success: false,
       message: "Server error",
     });
-    }
-}
-
+  }
+};
 exports.getReviews = async (req, res) => {
   try {
     const { productid } = req.params;
