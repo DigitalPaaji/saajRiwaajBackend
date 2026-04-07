@@ -137,7 +137,7 @@ const filter = {
       .populate("subcategory", "name")
       .sort({ createdAt: -1 }) 
       .skip(skip)
-      .limit(limit).select(" name rating reviewCount category subcategory price finalPrice discount thumbnail  images description  colorVariants");
+      .limit(limit).select(" name outofstock rating reviewCount category subcategory price finalPrice discount thumbnail  images description  colorVariants");
  
       const total = await Product.countDocuments(filter);
 
@@ -206,6 +206,7 @@ exports.updateProductById = async (req, res) => {
     req.body.isNewArrival  = req.body.isNewArrival === "true";
     req.body.deleteBarcode = req.body.deleteBarcode === "true";
     req.body.deletethumbnail = req.body.deletethumbnail == "true";
+    req.body.outofstock = req.body.outofstock == "true";
 
     
 
@@ -329,8 +330,9 @@ exports.getFeaturedProducts = async (req, res) => {
       price: 1,
       finalPrice: 1,
       colorVariants:1,
-       rating:1,
-          reviewCount:1
+      rating:1,
+      reviewCount:1,
+      outofstock:1
     }
   }
 ]);
@@ -455,8 +457,9 @@ exports.getRandomProduct = async (req, res) => {
           images: 1,
           description: 1,
           colorVariants:1,
-           rating:1,
-          reviewCount:1
+          rating:1,
+          reviewCount:1,
+          outofstock:1,
         }
       }
     ]);
@@ -507,7 +510,8 @@ exports.getAllRandomProduct= async(req,res)=>{
           description: 1,
           colorVariants:1,
           rating:1,
-          reviewCount:1
+          reviewCount:1,
+          outofstock:1,
         }
       }
     ]);
