@@ -9,5 +9,7 @@ router.delete('/:id', tagController.deleteTag);
 router.put('/toggle/:id', tagController.ToggleStatus);
 router.put('/:id',catupload.single("image") , tagController.editTag);
 router.get("/getfrontend",tagController.getTagsToggle)
+router.get("/product/:tagid",tagController.getProduct)
+
 
 module.exports = router;

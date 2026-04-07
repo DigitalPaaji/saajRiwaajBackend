@@ -128,3 +128,37 @@ exports.getTagsToggle= async(req,res)=>{
     res.status(500).json({success:false,message:error.message})
   }
 }
+
+
+
+exports.getProduct= async (req,res)=>{
+  try {
+    const {tagid} = req.params
+
+     const page = parseInt(req.query.page) || 1;
+    const limit = 16;
+    const skip = (page - 1) * limit;
+
+      const products = await ProductModel.find({
+  tags: { $in: [tagid] }
+}).skip(skip)
+          .limit(limit)
+            .populate('category','name')
+            .populate('tags','name')
+            .populate('subcategory','name').lean();
+            
+ const total = await ProductModel.countDocuments(filter);
+        res.status(200).json({products,
+          pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }})
+  } catch (error) {
+         res.status(500).json({error:err.message})
+  }
+}
+
+
+

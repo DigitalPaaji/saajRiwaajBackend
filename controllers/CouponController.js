@@ -24,7 +24,7 @@ const getAllCoupons = async (req, res) => {
   }
 };
 
-// ADMIN — delete coupon
+
 const deleteCoupon = async (req, res) => {
   const { id } = req.params;
   try {
