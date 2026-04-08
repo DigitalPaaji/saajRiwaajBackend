@@ -147,7 +147,9 @@ exports.getProduct= async (req,res)=>{
             .populate('tags','name')
             .populate('subcategory','name').lean();
             
- const total = await ProductModel.countDocuments(filter);
+ const total = await ProductModel.countDocuments({
+  tags: { $in: [tagid] }
+});
         res.status(200).json({products,
           pagination: {
         page,
@@ -156,7 +158,7 @@ exports.getProduct= async (req,res)=>{
         pages: Math.ceil(total / limit)
       }})
   } catch (error) {
-         res.status(500).json({error:err.message})
+         res.status(500).json({error:error.message})
   }
 }
 
