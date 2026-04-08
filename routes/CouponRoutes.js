@@ -6,6 +6,7 @@ const adminAuth = require("../middleware/adminAuth");
 
 router.post("/", adminAuth, CouponController.createCoupon);
 router.get("/", adminAuth, CouponController.getAllCoupons);
+router.get("/all", CouponController.getAllCoupons);
 router.delete("/:id", adminAuth, CouponController.deleteCoupon);
 
 
