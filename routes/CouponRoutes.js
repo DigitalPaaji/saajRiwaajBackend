@@ -10,6 +10,7 @@ router.get("/all", CouponController.getAllCoupons);
 router.delete("/:id", adminAuth, CouponController.deleteCoupon);
 
 
+
 router.get("/:code", CouponController.validateCoupon);
 
 module.exports = router;
