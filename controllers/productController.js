@@ -135,7 +135,7 @@ const filter = {
     const products = await Product.find(filter)
       .populate("category", "name")
       .populate("subcategory", "name")
-      .sort({ createdAt: -1 }) 
+       .sort({ createdAt: -1, _id: -1 })
       .skip(skip)
       .limit(limit).select(" name outofstock rating reviewCount category subcategory price finalPrice discount thumbnail  images description  colorVariants");
  
