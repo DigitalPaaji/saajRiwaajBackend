@@ -61,9 +61,13 @@ const fullshiping= {...shippingAddress,...shippingAddress.address}
     });
 
 
-    await User.findByIdAndUpdate(userId, { $set: {address:shippingAddress.address,name:shippingAddress.name,phone:shippingAddress.phone  } });
-  
+const user =    await User.findById(userId);
 
+  // { $set: {address:shippingAddress.address,name:shippingAddress.name,phone:shippingAddress.phone  } }
+user.phone =`${shippingAddress.phone}`
+user.name =shippingAddress.name 
+user.address =shippingAddress.address
+await user.save() 
 
 
     return res.json({ productOrder, userId });
