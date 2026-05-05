@@ -12,10 +12,8 @@ const {
 const upload = require("../helper/saveImage");
 
 const router = express.Router();
-
 router.post("/",upload.single("image"), createOffer);              
 router.get("/", getOffers);                  
-
 router.get("/all",getOffersAll)
 router.put("/toggle/:id",ToggleShowOnScreen)
 router.get("/forshow",getFroentOffers)
