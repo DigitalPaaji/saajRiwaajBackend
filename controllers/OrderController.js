@@ -9,6 +9,7 @@ const axios = require("axios");
 
 const qs= require("querystring");
 const sendOrderMail  = require("../helper/sendOrderMail");
+const { redisClient } = require("../helper/redisConfig");
  
 
 
@@ -68,7 +69,14 @@ user.phone =`${shippingAddress.phone}`
 user.name =shippingAddress.name 
 user.address =shippingAddress.address
 await user.save() 
-
+ const cacheKey = `user:${userId}`;
+await redisClient.set(
+      cacheKey,
+      JSON.stringify(user),
+      {
+        EX: 300,
+      }
+    );
 
     return res.json({ productOrder, userId });
 
