@@ -9,7 +9,7 @@ const { OAuth2Client } = require("google-auth-library");
 const { sendOtp } = require("../helper/sendOtp");
 const { redisClient } = require("../helper/redisConfig");
 const CartModel = require("../models/CartModel");
-
+const request = require("request");
 const USER_JWT_SECRET = process.env.USER_JWT_SECRET;
 const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET;
 
@@ -51,49 +51,82 @@ const signup = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-  const { email } = req.body;
-  try {
-    const otp = Math.floor(100000 + Math.random() * 900000);
-     
+  const { phone } = req.body;
 
-
- const key = `otp_limit:${email}`;
-
-    // Get current count
-    const count = await redisClient.get(key);
-
-  if (count && Number(count) >= 3) {
-      return res.status(429).json({
+  try { 
+    // Validate phone number
+    if (!phone || phone.length < 10) {
+      return res.status(400).json({
         success: false,
-        message: "Too many OTP requests. Try again after 5 minutes."
+        message: "Valid phone number required",
       });
     }
 
-await sendOtp(email,otp)
+    // Redis limit key
+    const key = `otp_limit:${phone}`;
 
-      await redisClient.set(
-      `otp:${email}`,   
-      otp.toString(),   
-      {
-        EX: 300     
+   
+    const count = await redisClient.get(key);
+
+    // if (count && Number(count) >= 3) {
+    //   return res.status(429).json({
+    //     success: false,
+    //     message: "Too many OTP requests. Try again after 5 minutes.",
+    //   });
+    // }
+
+    // SMS API Request
+    const options = {
+      method: "GET",
+      url: "http://advance.thesmsworld.com/API/generate_otp.php",
+      qs: {
+        auth: process.env.SMS_AUTH_KEY,
+        senderid: process.env.SMS_SENDER_ID,
+        msisdn: phone,
+        entity_id: process.env.SMS_ENTITY_ID,
+        countrycode:91,
+        template_id:process.env.SMS_TEMP_ID,
+      },
+      strictSSL: false,
+      rejectUnauthorized: false,
+      headers: {
+        "cache-control": "no-cache",
+      },
+    };
+
+    request(options, async function (error, response, body) {
+      if (error) {
+        console.log("SMS Error:", error);
+
+        return res.status(500).json({
+          success: false,
+          message: "Failed to send OTP",
+        });
       }
-    );
 
- if (!count) {
-      await redisClient.set(key, 1, { EX: 300 }); 
-    } else {
-      await redisClient.incr(key); 
-    }
+  
 
-    return res.status(200).json({
-      success: true,
-      message: "OTP sent successfully"
+      // Increase limit count
+      // if (!count) {
+      //   await redisClient.set(key, 1, {
+      //     EX: 300, // 5 min
+      //   });
+      // } else {
+      //   await redisClient.incr(key);
+      // }
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP sent successfully",
+        body:JSON.parse(body)
+      });
     });
-
   } catch (error) {
-      return res.status(500).json({
+    console.log(error);
+
+    return res.status(500).json({
       success: false,
-      message: "Something went wrong"
+      message: "Something went wrong",
     });
   }
  
@@ -102,25 +135,55 @@ await sendOtp(email,otp)
 
 const verifyOtp= async(req,res)=>{
   try {
-      const { email, otp ,wishlist,cart } = req.body;
+      const { phone,logid, otp ,wishlist,cart } = req.body;
 
-         const storedOtp = await redisClient.get(`otp:${email}`);
+//  const storedOtp = await redisClient.get(`otp:${email}`);
 
- if (!storedOtp) {
-      return res.status(400).json({ message: "OTP expired" });
-    }
+//  if (!storedOtp) {
+//       return res.status(400).json({ message: "OTP expired" });
+//     }
 
-    if (storedOtp !== String(otp)) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
+    // if (storedOtp !== String(otp)) {
+    //   return res.status(400).json({ message: "Invalid OTP" });
+    // }
 
- await redisClient.del(`otp:${email}`);
+//  await redisClient.del(`otp:${email}`);
 
-let user = await User.findOne({email});
+
+ const options = {
+      method: "GET",
+      url: "http://advance.thesmsworld.com/API/verify_otp.php",
+      qs: {
+        auth: process.env.SMS_AUTH_KEY,
+        logid: logid,
+      
+        otp:otp,
+        msisdn: phone,
+     
+      },
+      strictSSL: false,
+      rejectUnauthorized: false,
+      headers: {
+        "cache-control": "no-cache",
+      },
+    };
+
+request(options, async function (error, response, body) {
+      if (error) {
+        console.log("SMS Error:", error);
+
+        return res.status(500).json({
+          success: false,
+          message: "Failed to send OTP",
+        });
+      } 
+
+
+let user = await User.findOne({phone});
 
 if(!user){
  user = await User.create({
-email,wishlist
+phone,wishlist
   })
 
 
@@ -138,6 +201,7 @@ email,wishlist
 
 
 await  user.save()
+
 }
 
   if (cart.length > 0) {
@@ -176,7 +240,7 @@ return res.status(200).json({
 
    
     });
-
+})
 
   } catch (error) {
         console.error(error);

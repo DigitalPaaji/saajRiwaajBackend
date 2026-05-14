@@ -63,9 +63,7 @@ const fullshiping= {...shippingAddress,...shippingAddress.address}
 
 
 const user =    await User.findById(userId);
-
-  // { $set: {address:shippingAddress.address,name:shippingAddress.name,phone:shippingAddress.phone  } }
-user.phone =`${shippingAddress.phone}`
+user.email =`${shippingAddress.email}`
 user.name =shippingAddress.name 
 user.address =shippingAddress.address
 await user.save() 

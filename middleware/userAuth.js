@@ -18,7 +18,7 @@ const userAuth = async (req, res, next) => {
   const cacheKey = `user:${userId}`;
     const cachedUser = await redisClient.get(cacheKey);
 
- if (cachedUser) {
+ if (cachedUser) { 
       const user = JSON.parse(cachedUser);
 
 

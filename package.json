@@ -30,6 +30,7 @@
     "razorpay": "^2.9.6",
     "recharts": "^3.4.1",
     "redis": "^5.11.0",
+    "request": "^2.88.2",
     "socket.io": "^4.8.1"
   }
 }
