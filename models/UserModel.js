@@ -3,19 +3,20 @@ const mongoose = require("mongoose");
 
 
 const userSchema = new mongoose.Schema({
-  name: { type: String },
-  email: { type: String,unique: false},
+  name: { type: String},
+  email: { type: String},
  
   password:{
-    type:String
+    type:String,
+   
   },
   role: {
     type: [String],
     enum: ["user", "admin"],
     default: ["user"],  
   },
-
-  phone: { type: String, default: "",unique: true },
+ 
+  phone: { type: String,unique: true },
 
   address: {
     pincode: { type: String, default: "" },

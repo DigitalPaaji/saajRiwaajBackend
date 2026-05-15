@@ -183,7 +183,7 @@ let user = await User.findOne({phone});
 
 if(!user){
  user = await User.create({
-phone,wishlist
+phone:`${phone}`,wishlist
   })
 
 
